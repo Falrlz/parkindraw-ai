@@ -1,0 +1,11 @@
+("Parkinson's disease" OR "Parkinson disease" OR Parkinson)
+AND
+(NewHandPD OR "New HandPD")
+AND
+(image OR images OR handwriting OR drawing OR spiral OR meander OR circle)
+AND
+(CNN OR "convolutional neural network" OR "deep learning" OR "transfer learning" OR "image classification")
+AND
+(classification OR detection OR diagnosis)
+
+2025 - 2026
