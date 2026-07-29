@@ -44,13 +44,19 @@ wheels/
 .installed.cfg
 *.egg
 .pytest_cache/
+.ruff_cache/
 .coverage
+coverage.xml
 htmlcov/
 .mypy_cache/
+data/.parkindraw-audit-*/
 
 # PDF Literature Files
 research/literature/articles/*.pdf
 *.pdf
+
+# Local Project Documentation
+docs/
 
 # Jupyter Notebook Checkpoints
 .ipynb_checkpoints/

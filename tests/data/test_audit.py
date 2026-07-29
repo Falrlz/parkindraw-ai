@@ -1,113 +1,117 @@
-"""
-Data integrity and audit assertion unit tests.
-"""
+"""Contract tests for committed NewHandPD metadata artifacts."""
 
 import json
-import os
-import unittest
+import re
+from pathlib import Path
+
 import pandas as pd
 
-
-class TestDataAudit(unittest.TestCase):
-    def setUp(self):
-        self.metadata_dir = "data/metadata"
-
-    def test_metadata_files_exist(self):
-        self.assertTrue(os.path.exists(os.path.join(self.metadata_dir, "images.csv")))
-        self.assertTrue(os.path.exists(os.path.join(self.metadata_dir, "subjects.csv")))
-        self.assertTrue(os.path.exists(os.path.join(self.metadata_dir, "duplicate_groups.csv")))
-        self.assertTrue(os.path.exists(os.path.join(self.metadata_dir, "audit_report.json")))
-
-    def test_images_metadata_integrity(self):
-        images_csv = os.path.join(self.metadata_dir, "images.csv")
-        df = pd.read_csv(images_csv)
-
-        # Check total image count (NewHandPD spec: 594 images)
-        self.assertEqual(len(df), 594, f"Expected 594 images, found {len(df)}")
-
-        # Check required columns including raw tokens and anomaly flags
-        required_cols = [
-            "filepath",
-            "filename",
-            "raw_filename",
-            "raw_stem",
-            "raw_subject_token",
-            "class_name",
-            "label",
-            "drawing_type",
-            "drawing_index",
-            "subject_id",
-            "width",
-            "height",
-            "channels",
-            "checksum_sha256",
-            "anomaly_flags",
-        ]
-        for col in required_cols:
-            self.assertIn(col, df.columns, f"Missing required column {col}")
-
-        # Check class labels (0 or 1)
-        self.assertEqual(set(df["label"].unique()), {0, 1})
-
-        # Check drawing types (circle, meander, spiral)
-        self.assertEqual(set(df["drawing_type"].unique()), {"circle", "meander", "spiral"})
-
-        # Check drawing counts per type
-        self.assertEqual((df["drawing_type"] == "circle").sum(), 66)
-        self.assertEqual((df["drawing_type"] == "meander").sum(), 264)
-        self.assertEqual((df["drawing_type"] == "spiral").sum(), 264)
-
-        # Check drawing index bounds
-        circles = df[df["drawing_type"] == "circle"]
-        self.assertTrue((circles["drawing_index"] == 1).all())
-
-        meanders = df[df["drawing_type"] == "meander"]
-        self.assertTrue(meanders["drawing_index"].between(1, 4).all())
-
-        spirals = df[df["drawing_type"] == "spiral"]
-        self.assertTrue(spirals["drawing_index"].between(1, 4).all())
-
-        # Check no missing checksums
-        self.assertEqual(df["checksum_sha256"].isna().sum(), 0)
-
-    def test_subjects_metadata_integrity(self):
-        subjects_csv = os.path.join(self.metadata_dir, "subjects.csv")
-        df = pd.read_csv(subjects_csv)
-
-        # Check total subject count (NewHandPD spec: 66 subjects = 35 Healthy + 31 Parkinson)
-        self.assertEqual(len(df), 66, f"Expected 66 subjects, found {len(df)}")
-
-        healthy_count = (df["label"] == 0).sum()
-        parkinson_count = (df["label"] == 1).sum()
-
-        self.assertEqual(healthy_count, 35, f"Expected 35 Healthy subjects, found {healthy_count}")
-        self.assertEqual(parkinson_count, 31, f"Expected 31 Parkinson subjects, found {parkinson_count}")
-
-        # Check drawing counts per subject: 1 Circle, 4 Meander, 4 Spiral = 9 images per subject
-        self.assertTrue((df["total_images"] == 9).all(), "Every subject should have exactly 9 drawings")
-
-    def test_exact_duplicates_count(self):
-        duplicates_csv = os.path.join(self.metadata_dir, "duplicate_groups.csv")
-        df_dup = pd.read_csv(duplicates_csv)
-
-        # Check 36 duplicate groups and 80 images
-        unique_groups = df_dup["duplicate_group_id"].nunique()
-        self.assertEqual(unique_groups, 36, f"Expected 36 duplicate groups, found {unique_groups}")
-        self.assertEqual(len(df_dup), 80, f"Expected 80 duplicate images, found {len(df_dup)}")
-
-    def test_audit_report_summary(self):
-        report_json = os.path.join(self.metadata_dir, "audit_report.json")
-        with open(report_json, "r", encoding="utf-8") as f:
-            report = json.load(f)
-
-        self.assertEqual(report["total_images"], 594)
-        self.assertEqual(report["total_subjects"], 66)
-        self.assertEqual(report["healthy_subjects"], 35)
-        self.assertEqual(report["parkinson_subjects"], 31)
-        self.assertEqual(report["exact_duplicate_groups_count"], 36)
-        self.assertEqual(report["exact_duplicate_images_count"], 80)
-        self.assertEqual(report["corrupted_images_count"], 0)
+METADATA_DIR = Path("data/metadata")
 
 
-if __name__ == "__main__":
-    unittest.main()
+def test_metadata_artifact_set_is_committed() -> None:
+    expected = {
+        "images.csv",
+        "subjects.csv",
+        "duplicate_groups.csv",
+        "near_duplicate_candidates.csv",
+        "audit_report.json",
+    }
+    assert expected <= {path.name for path in METADATA_DIR.iterdir()}
+
+
+def test_images_manifest_integrity() -> None:
+    images = pd.read_csv(METADATA_DIR / "images.csv")
+
+    assert len(images) == 594
+    assert {
+        "filepath",
+        "filename",
+        "raw_filename",
+        "raw_stem",
+        "raw_subject_token",
+        "class_name",
+        "label",
+        "drawing_type",
+        "drawing_index",
+        "raw_subject_id",
+        "subject_id",
+        "width",
+        "height",
+        "channels",
+        "checksum_sha256",
+        "perceptual_dhash",
+        "file_size_bytes",
+        "anomaly_flags",
+        "duplicate_group_id",
+    } <= set(images.columns)
+    assert set(images["label"]) == {0, 1}
+    assert set(images["drawing_type"]) == {"circle", "meander", "spiral"}
+    assert images["checksum_sha256"].str.fullmatch(r"[0-9a-f]{64}").all()
+    assert images["perceptual_dhash"].str.fullmatch(r"[0-9a-f]{16}").all()
+    assert images["drawing_index"].between(1, 4).all()
+    assert not images.duplicated(["subject_id", "drawing_type", "drawing_index"]).any()
+
+    drawing_counts = images["drawing_type"].value_counts().to_dict()
+    assert drawing_counts == {"meander": 264, "spiral": 264, "circle": 66}
+
+
+def test_subject_manifest_integrity() -> None:
+    subjects = pd.read_csv(METADATA_DIR / "subjects.csv")
+
+    assert len(subjects) == 66
+    assert (subjects["label"] == 0).sum() == 35
+    assert (subjects["label"] == 1).sum() == 31
+    assert (subjects["circle_count"] == 1).all()
+    assert (subjects["meander_count"] == 4).all()
+    assert (subjects["spiral_count"] == 4).all()
+    assert (subjects["total_images"] == 9).all()
+
+
+def test_exact_duplicate_manifest_integrity() -> None:
+    duplicates = pd.read_csv(METADATA_DIR / "duplicate_groups.csv")
+
+    assert duplicates["duplicate_group_id"].nunique() == 36
+    assert len(duplicates) == 80
+    assert (duplicates.groupby("duplicate_group_id").size() >= 2).all()
+
+
+def test_near_duplicate_manifest_has_stable_schema() -> None:
+    candidates = pd.read_csv(METADATA_DIR / "near_duplicate_candidates.csv")
+
+    assert {
+        "candidate_id",
+        "filepath_a",
+        "filepath_b",
+        "subject_id_a",
+        "subject_id_b",
+        "class_name_a",
+        "class_name_b",
+        "drawing_type",
+        "hamming_distance",
+        "dhash_a",
+        "dhash_b",
+    } == set(candidates.columns)
+    assert candidates["candidate_id"].is_unique
+
+
+def test_audit_report_is_deterministic_and_passed() -> None:
+    report = json.loads(
+        (METADATA_DIR / "audit_report.json").read_text(encoding="utf-8")
+    )
+
+    assert "audit_timestamp" not in report
+    assert report["status"] == "passed"
+    assert report["validation_errors"] == []
+    assert report["total_images"] == 594
+    assert report["total_subjects"] == 66
+    assert report["healthy_subjects"] == 35
+    assert report["parkinson_subjects"] == 31
+    assert report["exact_duplicate_groups_count"] == 36
+    assert report["exact_duplicate_images_count"] == 80
+    assert report["corrupted_images_count"] == 0
+    assert report["invalid_metadata_files_count"] == 0
+    assert re.fullmatch(
+        r"[0-9a-f]{64}",
+        report["dataset_fingerprint_sha256"],
+    )

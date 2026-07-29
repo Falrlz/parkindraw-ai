@@ -1,63 +1,193 @@
-"""
-Integration tests for data audit engine using a temporary dataset directory.
-"""
+"""Integration tests for the configurable audit pipeline."""
 
 import json
-import os
 import shutil
-import tempfile
-import unittest
-from PIL import Image
+from pathlib import Path
+
 import pandas as pd
+import yaml
+from PIL import Image
 
-from parkindraw.data.audit import run_data_audit
-
-
-class TestAuditIntegration(unittest.TestCase):
-    def setUp(self):
-        self.test_dir = tempfile.mkdtemp()
-        self.raw_dir = os.path.join(self.test_dir, "raw")
-        self.meta_dir = os.path.join(self.test_dir, "metadata")
-
-        # Create mock raw structure
-        os.makedirs(os.path.join(self.raw_dir, "HealthyCircle"), exist_ok=True)
-        os.makedirs(os.path.join(self.raw_dir, "HealthyMeander"), exist_ok=True)
-        os.makedirs(os.path.join(self.raw_dir, "PatientSpiral"), exist_ok=True)
-
-        # Create mock images
-        img1 = Image.new("RGB", (100, 100), color="white")
-        img1.save(os.path.join(self.raw_dir, "HealthyCircle", "circA-H1.jpg"))
-
-        # Duplicate images (same content img1)
-        img1.save(os.path.join(self.raw_dir, "HealthyMeander", "mea1-H1.jpg"))
-
-        # Different image
-        img2 = Image.new("RGB", (120, 120), color="black")
-        img2.save(os.path.join(self.raw_dir, "PatientSpiral", "sp1-P1.jpg"))
-
-    def tearDown(self):
-        shutil.rmtree(self.test_dir)
-
-    def test_run_data_audit_integration(self):
-        report = run_data_audit(raw_dir=self.raw_dir, output_dir=self.meta_dir)
-
-        self.assertIsNotNone(report)
-        self.assertEqual(report["total_images"], 3)
-        self.assertEqual(report["total_subjects"], 2)
-
-        # Verify artifacts written
-        self.assertTrue(os.path.exists(os.path.join(self.meta_dir, "images.csv")))
-        self.assertTrue(os.path.exists(os.path.join(self.meta_dir, "subjects.csv")))
-        self.assertTrue(os.path.exists(os.path.join(self.meta_dir, "duplicate_groups.csv")))
-        self.assertTrue(os.path.exists(os.path.join(self.meta_dir, "audit_report.json")))
-
-        df_img = pd.read_csv(os.path.join(self.meta_dir, "images.csv"))
-        self.assertEqual(len(df_img), 3)
-        self.assertIn("anomaly_flags", df_img.columns)
-
-        df_dup = pd.read_csv(os.path.join(self.meta_dir, "duplicate_groups.csv"))
-        self.assertEqual(len(df_dup), 2)  # img1 and its duplicate in HealthyMeander
+from parkindraw.data.audit import (
+    AuditConfig,
+    ExpectedDataset,
+    NearDuplicateConfig,
+    main,
+    run_data_audit,
+)
 
 
-if __name__ == "__main__":
-    unittest.main()
+def save_image(
+    root: Path,
+    folder: str,
+    filename: str,
+    *,
+    color: str = "white",
+) -> Path:
+    path = root / folder / filename
+    path.parent.mkdir(parents=True, exist_ok=True)
+    Image.new("RGB", (40, 30), color=color).save(path)
+    return path
+
+
+def build_small_dataset(raw_dir: Path) -> None:
+    first = save_image(raw_dir, "HealthyCircle", "circA-H1.jpg")
+    duplicate = raw_dir / "HealthyMeander" / "mea1-H1.jpg"
+    duplicate.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(first, duplicate)
+    save_image(
+        raw_dir,
+        "PatientSpiral",
+        "sp1-P1.jpg",
+        color="black",
+    )
+
+
+def artifact_bytes(output_dir: Path) -> dict[str, bytes]:
+    return {
+        path.name: path.read_bytes()
+        for path in sorted(output_dir.iterdir())
+        if path.is_file()
+    }
+
+
+def test_audit_writes_complete_deterministic_artifact_set(
+    tmp_path: Path,
+) -> None:
+    raw_dir = tmp_path / "raw"
+    output_a = tmp_path / "metadata-a"
+    output_b = tmp_path / "metadata-b"
+    build_small_dataset(raw_dir)
+
+    report_a = run_data_audit(raw_dir, output_a)
+    report_b = run_data_audit(raw_dir, output_b)
+
+    assert report_a == report_b
+    assert report_a["status"] == "passed"
+    assert report_a["total_images"] == 3
+    assert report_a["total_subjects"] == 2
+    assert report_a["exact_duplicate_groups_count"] == 1
+    assert report_a["exact_duplicate_images_count"] == 2
+    assert artifact_bytes(output_a) == artifact_bytes(output_b)
+    assert set(artifact_bytes(output_a)) == {
+        "audit_report.json",
+        "duplicate_groups.csv",
+        "images.csv",
+        "near_duplicate_candidates.csv",
+        "subjects.csv",
+    }
+
+    images = pd.read_csv(output_a / "images.csv")
+    assert len(images) == 3
+    assert "perceptual_dhash" in images.columns
+
+    duplicates = pd.read_csv(output_a / "duplicate_groups.csv")
+    assert len(duplicates) == 2
+
+
+def test_corrupt_and_malformed_files_are_reported_separately(
+    tmp_path: Path,
+) -> None:
+    raw_dir = tmp_path / "raw"
+    output_dir = tmp_path / "metadata"
+    save_image(raw_dir, "HealthyCircle", "circA-H1.png")
+
+    truncated = save_image(raw_dir, "HealthyCircle", "circA-H2.png")
+    truncated.write_bytes(truncated.read_bytes()[:100])
+    save_image(raw_dir, "HealthyCircle", "unexpected-H3.png")
+
+    report = run_data_audit(raw_dir, output_dir)
+
+    assert report["status"] == "failed"
+    assert report["total_images"] == 1
+    assert report["corrupted_images_count"] == 1
+    assert report["invalid_metadata_files_count"] == 1
+    assert report["unreadable_images"][0]["filepath"].endswith("circA-H2.png")
+    assert report["invalid_metadata_files"][0]["filepath"].endswith("unexpected-H3.png")
+
+
+def test_near_duplicate_hook_reports_non_identical_visual_candidates(
+    tmp_path: Path,
+) -> None:
+    raw_dir = tmp_path / "raw"
+    output_dir = tmp_path / "metadata"
+    save_image(raw_dir, "HealthySpiral", "sp1-H1.png", color="white")
+    save_image(raw_dir, "HealthySpiral", "sp1-H2.png", color="gray")
+    config = AuditConfig.for_paths(
+        raw_dir,
+        output_dir,
+        near_duplicate=NearDuplicateConfig(max_hamming_distance=0),
+    )
+
+    report = run_data_audit(config=config)
+
+    assert report["exact_duplicate_images_count"] == 0
+    assert report["near_duplicate_analysis"]["candidate_pairs_count"] == 1
+    candidates = pd.read_csv(output_dir / "near_duplicate_candidates.csv")
+    assert len(candidates) == 1
+    assert candidates.loc[0, "hamming_distance"] == 0
+
+
+def test_cli_honors_config_extensions_artifacts_and_expected_counts(
+    tmp_path: Path,
+) -> None:
+    raw_dir = tmp_path / "raw"
+    output_dir = tmp_path / "output"
+    save_image(raw_dir, "HealthyCircle", "circA-H1.bmp")
+    config_path = tmp_path / "audit.yaml"
+    config_path.write_text(
+        yaml.safe_dump(
+            {
+                "project_root": ".",
+                "raw_data_dir": "raw",
+                "metadata_output_dir": "ignored-by-override",
+                "supported_extensions": [".bmp"],
+                "artifacts": {
+                    "images_csv": "custom-images.csv",
+                    "subjects_csv": "custom-subjects.csv",
+                    "duplicate_groups_csv": "custom-duplicates.csv",
+                    "near_duplicate_candidates_csv": "custom-near.csv",
+                    "audit_report_json": "custom-report.json",
+                },
+                "expected_dataset": {
+                    "total_images": 1,
+                    "total_subjects": 1,
+                    "healthy_subjects": 1,
+                    "parkinson_subjects": 0,
+                },
+                "near_duplicate": {"enabled": False},
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    exit_code = main(
+        [
+            "--config",
+            str(config_path),
+            "--output-dir",
+            str(output_dir),
+        ]
+    )
+
+    assert exit_code == 0
+    assert (output_dir / "custom-images.csv").exists()
+    report = json.loads((output_dir / "custom-report.json").read_text())
+    assert report["total_images"] == 1
+    assert report["near_duplicate_analysis"]["enabled"] is False
+
+
+def test_expected_count_mismatch_marks_report_failed(tmp_path: Path) -> None:
+    raw_dir = tmp_path / "raw"
+    output_dir = tmp_path / "metadata"
+    save_image(raw_dir, "HealthyCircle", "circA-H1.png")
+    config = AuditConfig.for_paths(
+        raw_dir,
+        output_dir,
+        expected=ExpectedDataset(total_images=2),
+    )
+
+    report = run_data_audit(config=config)
+
+    assert report["status"] == "failed"
+    assert report["validation_errors"] == ["total_images: expected 2, found 1"]
