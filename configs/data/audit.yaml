@@ -1,0 +1,19 @@
+# ParkinDraw AI Data Audit Configuration
+
+raw_data_dir: "data/raw/newhandpd"
+metadata_output_dir: "data/metadata"
+supported_extensions:
+  - ".jpg"
+  - ".jpeg"
+  - ".png"
+
+artifacts:
+  images_csv: "data/metadata/images.csv"
+  subjects_csv: "data/metadata/subjects.csv"
+  duplicate_groups_csv: "data/metadata/duplicate_groups.csv"
+  audit_report_json: "data/metadata/audit_report.json"
+
+expected_subjects:
+  healthy_count: 35
+  parkinson_count: 31
+  total_subjects: 66
