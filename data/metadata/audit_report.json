@@ -1,5 +1,5 @@
 {
-  "audit_timestamp": "2026-07-29T16:58:17.090368",
+  "audit_timestamp": "2026-07-29T18:44:45.386029",
   "dataset_name": "NewHandPD",
   "total_images": 594,
   "total_subjects": 66,
@@ -12,6 +12,7 @@
   },
   "exact_duplicate_groups_count": 36,
   "exact_duplicate_images_count": 80,
+  "anomalous_records_count": 36,
   "corrupted_images_count": 0,
   "resolution_distribution": [
     {

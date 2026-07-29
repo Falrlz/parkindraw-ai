@@ -1,5 +1,5 @@
 """
-Data integrity and audit unit tests using standard unittest.
+Data integrity and audit assertion unit tests.
 """
 
 import json
@@ -25,10 +25,13 @@ class TestDataAudit(unittest.TestCase):
         # Check total image count (NewHandPD spec: 594 images)
         self.assertEqual(len(df), 594, f"Expected 594 images, found {len(df)}")
 
-        # Check required columns
+        # Check required columns including raw tokens and anomaly flags
         required_cols = [
             "filepath",
             "filename",
+            "raw_filename",
+            "raw_stem",
+            "raw_subject_token",
             "class_name",
             "label",
             "drawing_type",
@@ -38,6 +41,7 @@ class TestDataAudit(unittest.TestCase):
             "height",
             "channels",
             "checksum_sha256",
+            "anomaly_flags",
         ]
         for col in required_cols:
             self.assertIn(col, df.columns, f"Missing required column {col}")
@@ -47,6 +51,21 @@ class TestDataAudit(unittest.TestCase):
 
         # Check drawing types (circle, meander, spiral)
         self.assertEqual(set(df["drawing_type"].unique()), {"circle", "meander", "spiral"})
+
+        # Check drawing counts per type
+        self.assertEqual((df["drawing_type"] == "circle").sum(), 66)
+        self.assertEqual((df["drawing_type"] == "meander").sum(), 264)
+        self.assertEqual((df["drawing_type"] == "spiral").sum(), 264)
+
+        # Check drawing index bounds
+        circles = df[df["drawing_type"] == "circle"]
+        self.assertTrue((circles["drawing_index"] == 1).all())
+
+        meanders = df[df["drawing_type"] == "meander"]
+        self.assertTrue(meanders["drawing_index"].between(1, 4).all())
+
+        spirals = df[df["drawing_type"] == "spiral"]
+        self.assertTrue(spirals["drawing_index"].between(1, 4).all())
 
         # Check no missing checksums
         self.assertEqual(df["checksum_sha256"].isna().sum(), 0)
@@ -67,6 +86,15 @@ class TestDataAudit(unittest.TestCase):
         # Check drawing counts per subject: 1 Circle, 4 Meander, 4 Spiral = 9 images per subject
         self.assertTrue((df["total_images"] == 9).all(), "Every subject should have exactly 9 drawings")
 
+    def test_exact_duplicates_count(self):
+        duplicates_csv = os.path.join(self.metadata_dir, "duplicate_groups.csv")
+        df_dup = pd.read_csv(duplicates_csv)
+
+        # Check 36 duplicate groups and 80 images
+        unique_groups = df_dup["duplicate_group_id"].nunique()
+        self.assertEqual(unique_groups, 36, f"Expected 36 duplicate groups, found {unique_groups}")
+        self.assertEqual(len(df_dup), 80, f"Expected 80 duplicate images, found {len(df_dup)}")
+
     def test_audit_report_summary(self):
         report_json = os.path.join(self.metadata_dir, "audit_report.json")
         with open(report_json, "r", encoding="utf-8") as f:
@@ -76,6 +104,8 @@ class TestDataAudit(unittest.TestCase):
         self.assertEqual(report["total_subjects"], 66)
         self.assertEqual(report["healthy_subjects"], 35)
         self.assertEqual(report["parkinson_subjects"], 31)
+        self.assertEqual(report["exact_duplicate_groups_count"], 36)
+        self.assertEqual(report["exact_duplicate_images_count"], 80)
         self.assertEqual(report["corrupted_images_count"], 0)
 
 

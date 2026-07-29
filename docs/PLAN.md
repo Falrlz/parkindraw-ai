@@ -26,9 +26,9 @@ Tanggal pembaruan: **29 Juli 2026**
 | Rancangan model | Selesai |
 | Rancangan struktur repository | Selesai |
 | Dataset NewHandPD | Sudah tersedia secara lokal |
-| Audit dataset pendahuluan | Selesai, belum reproducible |
-| Repository Git | Belum diinisialisasi |
-| Dataset pipeline | Belum dimulai |
+| Audit dataset & governance (Phase 1) | Selesai (Completed) |
+| Repository Git | Selesai (Initial commit & GitHub connected) |
+| Dataset pipeline & splits (Phase 2) | Belum dimulai |
 | Training dan Optuna | Belum dimulai |
 | Backend dan frontend | Belum dimulai |
 
@@ -149,7 +149,7 @@ bertambah.
 
 ## 6. Phase 1 --- Data Governance and Reproducible Audit
 
-Status: **Not started**
+Status: **Completed**
 
 ### Tujuan
 

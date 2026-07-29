@@ -1,6 +1,7 @@
 """
 Dataset Audit Engine for NewHandPD.
-Scans raw dataset, extracts metadata, detects exact duplicates, and generates metadata artifacts.
+Scans raw dataset, extracts metadata with raw tokens and anomaly flags,
+detects exact duplicates deterministically, and generates metadata artifacts.
 """
 
 from collections import defaultdict
@@ -17,25 +18,42 @@ def run_data_audit(
     raw_dir: str = "data/raw/newhandpd", output_dir: str = "data/metadata"
 ) -> Dict:
     """
-    Scans raw_dir, audits all images, detects duplicates, and writes artifacts.
+    Scans raw_dir deterministically, audits all images, detects duplicates, and writes artifacts.
     """
     os.makedirs(output_dir, exist_ok=True)
 
     records = []
     corrupted_files = []
 
+    # Deterministic file discovery
+    all_filepaths = []
     for root, _, files in os.walk(raw_dir):
         for file in sorted(files):
             if file.lower().endswith((".jpg", ".jpeg", ".png")):
-                full_path = os.path.join(root, file)
-                try:
-                    record = parse_newhandpd_file(full_path, raw_dir)
-                    if record:
-                        records.append(record.to_dict())
-                except Exception as e:
-                    corrupted_files.append({"filepath": full_path, "error": str(e)})
+                all_filepaths.append(os.path.join(root, file))
 
-    # Detect exact duplicates by SHA-256
+    all_filepaths.sort()
+
+    for full_path in all_filepaths:
+        try:
+            record = parse_newhandpd_file(full_path, raw_dir)
+            if record:
+                records.append(record.to_dict())
+        except Exception as e:
+            corrupted_files.append({"filepath": full_path, "error": str(e)})
+
+    # Sort records deterministically
+    records.sort(
+        key=lambda r: (
+            r["class_name"],
+            r["drawing_type"],
+            r["subject_id"],
+            r["drawing_index"],
+            r["filename"],
+        )
+    )
+
+    # Detect exact duplicates by SHA-256 with deterministic sorting
     hash_groups = defaultdict(list)
     for r in records:
         hash_groups[r["checksum_sha256"]].append(r)
@@ -44,7 +62,10 @@ def run_data_audit(
     dup_records = []
     dup_id_counter = 1
 
-    for checksum, group in hash_groups.items():
+    sorted_hashes = sorted(hash_groups.keys())
+
+    for checksum in sorted_hashes:
+        group = hash_groups[checksum]
         if len(group) > 1:
             dup_id = f"dup_{dup_id_counter:03d}"
             dup_id_counter += 1
@@ -59,6 +80,7 @@ def run_data_audit(
                         "drawing_type": r["drawing_type"],
                         "drawing_index": r["drawing_index"],
                         "checksum_sha256": checksum,
+                        "anomaly_flags": r["anomaly_flags"],
                     }
                 )
 
@@ -81,11 +103,11 @@ def run_data_audit(
     grouped_sub = df_images.groupby(["subject_id", "class_name", "label"])
 
     for (sub_id, class_name, label), group in grouped_sub:
-        drawings = sorted(group["drawing_type"].unique())
         circle_count = len(group[group["drawing_type"] == "circle"])
         meander_count = len(group[group["drawing_type"] == "meander"])
         spiral_count = len(group[group["drawing_type"] == "spiral"])
         total_images = len(group)
+        has_anomalies = any(f != "none" for f in group["anomaly_flags"])
 
         subject_summary.append(
             {
@@ -96,6 +118,7 @@ def run_data_audit(
                 "meander_count": meander_count,
                 "spiral_count": spiral_count,
                 "total_images": total_images,
+                "has_anomalies": has_anomalies,
             }
         )
 
@@ -108,6 +131,8 @@ def run_data_audit(
     total_subjects = len(df_subjects)
     healthy_subjects = len(df_subjects[df_subjects["label"] == 0])
     parkinson_subjects = len(df_subjects[df_subjects["label"] == 1])
+
+    anomalous_records_count = (df_images["anomaly_flags"] != "none").sum()
 
     res_counts = df_images.groupby(["width", "height"]).size().to_dict()
     res_distribution = [
@@ -133,6 +158,7 @@ def run_data_audit(
         if not df_duplicates.empty
         else 0,
         "exact_duplicate_images_count": len(df_duplicates),
+        "anomalous_records_count": int(anomalous_records_count),
         "corrupted_images_count": len(corrupted_files),
         "resolution_distribution": res_distribution,
         "corrupted_files": corrupted_files,
@@ -147,6 +173,7 @@ def run_data_audit(
     )
     print(f"Healthy Subjects: {healthy_subjects}, Parkinson Subjects: {parkinson_subjects}")
     print(f"Duplicate Groups: {report['exact_duplicate_groups_count']} (total duplicate images: {report['exact_duplicate_images_count']})")
+    print(f"Anomalous Records: {anomalous_records_count}")
     print(f"Metadata artifacts saved to: {output_dir}")
 
     return report
