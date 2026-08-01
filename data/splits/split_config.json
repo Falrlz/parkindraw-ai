@@ -1,0 +1,23 @@
+{
+  "development_class_counts": {
+    "Healthy": 28,
+    "Parkinson": 24
+  },
+  "development_subjects": 52,
+  "fold_validation_subjects": [
+    17,
+    18,
+    17
+  ],
+  "holdout_class_counts": {
+    "Healthy": 7,
+    "Parkinson": 7
+  },
+  "holdout_size": 0.2,
+  "holdout_subjects": 14,
+  "n_splits": 3,
+  "seed": 42,
+  "sessions": 56,
+  "total_images": 594,
+  "total_subjects": 66
+}

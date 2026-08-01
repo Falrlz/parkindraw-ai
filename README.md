@@ -31,7 +31,7 @@ under `docs/`. This directory is intentionally excluded from Git.
 parkindraw-ai/
 ├── configs/              # Versioned data and experiment configuration
 ├── data/
-│   ├── raw/newhandpd/    # Local immutable dataset; ignored by Git
+│   ├── raw/              # Local immutable dataset; ignored by Git
 │   └── metadata/         # Reproducible audit manifests
 ├── docs/                 # Local project documentation; ignored by Git
 ├── notebooks/            # Exploration only; no production logic
@@ -76,7 +76,7 @@ Place the downloaded NewHandPD folders without renaming or modifying their
 contents:
 
 ```text
-data/raw/newhandpd/
+data/raw/
 ├── HealthyCircle/
 ├── HealthyMeander/
 ├── HealthySpiral/
