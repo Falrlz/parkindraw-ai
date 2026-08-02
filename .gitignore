@@ -71,3 +71,4 @@ frontend/build/
 .idea/
 .DS_Store
 Thumbs.db
+mlflow.db
