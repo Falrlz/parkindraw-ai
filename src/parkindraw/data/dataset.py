@@ -1,7 +1,10 @@
 """Dataset loading for the NewHandPD static-image subset.
 
-Label dan drawing type diambil dari nama folder. Subject ID dan drawing index
-di-parse dari nama file. File asli tidak pernah diubah.
+The class and drawing type come from the folder name; the subject ID and
+drawing index are parsed from the file name. Source files are never modified.
+
+This module is the single source of truth for parsing rules. It knows nothing
+about train/test splits, and it reads no pixels while building the manifest.
 """
 
 import re
@@ -9,9 +12,10 @@ from pathlib import Path
 
 import pandas as pd
 
-# Folder menentukan class dan drawing type. Nama file tidak pernah menentukan
-# class, karena seluruh circle memakai prefix "P" sebagai indeks partisipan
-# di kedua folder (HealthyCircle/circA-P1.jpg dan PatientCircle/circA-P1.jpg).
+# The folder determines both class and drawing type. A file name never
+# determines the class: every circle uses the "P" prefix as a participant index
+# in both folders (HealthyCircle/circA-P1.jpg and PatientCircle/circA-P1.jpg),
+# so trusting the name would mislabel every healthy circle.
 FOLDER_SCHEMA = {
     "HealthyCircle": ("Healthy", 0, "circle"),
     "HealthyMeander": ("Healthy", 0, "meander"),
@@ -27,9 +31,14 @@ FILENAME_PATTERNS = {
     "spiral": re.compile(r"sp(\d+)-[HhPp](\d+)$", re.IGNORECASE),
 }
 
-# Arsip sumber memiliki mea1, mea2, mea3, dan mea5 untuk subjek P08.
-# Protokol dataset menetapkan empat meander, jadi mea5 dipetakan ke index 4.
+# The dataset protocol defines four meanders per subject, but the source
+# archive ships mea1, mea2, mea3, and mea5 for subject P08. The anomaly is
+# mapped explicitly rather than swallowed, so an unexpected index still fails.
 DRAWING_INDEX_OVERRIDES = {("PatientMeander", "mea5-p8"): 4}
+
+# The dataset provides one circle and four of each other drawing per subject.
+CIRCLE_DRAWING_INDEX = 1
+MAX_DRAWING_INDEX = 4
 
 MANIFEST_COLUMNS = [
     "filepath",
@@ -52,20 +61,24 @@ def _parse_file(path: Path, folder: str) -> dict:
 
     match = FILENAME_PATTERNS[drawing_type].fullmatch(stem)
     if match is None:
-        raise ManifestError(f"Nama file tidak sesuai skema {drawing_type}: {path.name}")
+        raise ManifestError(
+            f"Filename does not match the {drawing_type} schema: {path.name}"
+        )
 
     if drawing_type == "circle":
-        drawing_index, subject_number = 1, match.group(1)
+        drawing_index, subject_number = CIRCLE_DRAWING_INDEX, match.group(1)
     else:
         drawing_index, subject_number = int(match.group(1)), match.group(2)
 
     override = DRAWING_INDEX_OVERRIDES.get((folder, stem.lower()))
     if override is not None:
         drawing_index = override
-    elif drawing_index not in range(1, 5):
-        raise ManifestError(f"Drawing index {drawing_index} di luar 1..4: {path.name}")
+    elif drawing_index not in range(1, MAX_DRAWING_INDEX + 1):
+        raise ManifestError(
+            f"Drawing index {drawing_index} outside 1..{MAX_DRAWING_INDEX}: {path.name}"
+        )
 
-    # Subject ID mengikuti class dari folder, bukan prefix pada nama file.
+    # The subject ID follows the class from the folder, not the filename prefix.
     prefix = "H" if label == 0 else "P"
     return {
         "filepath": f"{folder}/{path.name}",
@@ -83,20 +96,20 @@ def build_manifest(
     *,
     extensions: tuple[str, ...] = (".jpg", ".jpeg", ".png"),
 ) -> pd.DataFrame:
-    """Pindai `raw_dir` dan kembalikan satu baris per gambar.
+    """Scan `raw_dir` and return one row per image.
 
-    Urutan baris deterministik agar split dengan seed yang sama selalu
-    menghasilkan pembagian yang identik.
+    Row order is deterministic so that splitting with the same seed always
+    yields an identical partition.
     """
     root = Path(raw_dir)
     if not root.is_dir():
-        raise FileNotFoundError(f"Folder dataset tidak ditemukan: {root}")
+        raise FileNotFoundError(f"Dataset folder not found: {root}")
 
     rows = []
     for folder in sorted(FOLDER_SCHEMA):
         folder_path = root / folder
         if not folder_path.is_dir():
-            raise FileNotFoundError(f"Folder wajib tidak ditemukan: {folder_path}")
+            raise FileNotFoundError(f"Required folder not found: {folder_path}")
         for path in sorted(folder_path.iterdir(), key=lambda p: p.name.casefold()):
             if path.is_file() and path.suffix.lower() in extensions:
                 rows.append(_parse_file(path, folder))
@@ -109,17 +122,17 @@ def build_manifest(
 
 
 def filter_drawing(manifest: pd.DataFrame, drawing_type: str) -> pd.DataFrame:
-    """Ambil subset satu drawing type untuk melatih satu model."""
+    """Select the subset for a single drawing type, to train one model."""
     if drawing_type not in {"circle", "meander", "spiral"}:
-        raise ValueError(f"Drawing type tidak dikenal: {drawing_type}")
+        raise ValueError(f"Unknown drawing type: {drawing_type}")
     return manifest.loc[manifest["drawing_type"] == drawing_type].reset_index(drop=True)
 
 
 class DrawingDataset:
-    """PyTorch Dataset yang membaca gambar berdasarkan manifest.
+    """PyTorch Dataset that reads images according to a manifest.
 
-    Torch di-import saat instansiasi agar modul ini tetap dapat dipakai untuk
-    membangun manifest tanpa dependency training terpasang.
+    Torch and PIL are imported lazily so this module stays usable for building
+    manifests on machines without the training dependencies installed.
     """
 
     def __init__(
