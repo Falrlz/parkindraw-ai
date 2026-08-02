@@ -27,6 +27,7 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 
 from parkindraw.data.dataset import build_manifest
+from parkindraw.evaluation.metrics import aggregate_by_subject
 
 DRAWING_TYPES = ("circle", "meander", "spiral")
 
@@ -67,23 +68,6 @@ def image_metadata(manifest: pd.DataFrame, raw_dir: str | Path) -> pd.DataFrame:
     return pd.concat([manifest.reset_index(drop=True), pd.DataFrame(records)], axis=1)
 
 
-def aggregate_to_subject(
-    frame: pd.DataFrame, probabilities: np.ndarray
-) -> pd.DataFrame:
-    """Average image-level probabilities into one score per subject.
-
-    Subject level is the unit that matters: the product answers "should this
-    person be referred?", not "is this particular drawing abnormal?". It also
-    matches the objective Optuna will optimise in Phase 3.
-    """
-    scored = frame[["subject_id", "label"]].copy()
-    scored["probability"] = probabilities
-    return scored.groupby("subject_id", as_index=False).agg(
-        label=("label", "first"),
-        probability=("probability", "mean"),
-    )
-
-
 def evaluate_fold(
     train: pd.DataFrame,
     validation: pd.DataFrame,
@@ -98,7 +82,13 @@ def evaluate_fold(
     model.fit(train[list(FEATURES)], train["label"])
 
     probabilities = model.predict_proba(validation[list(FEATURES)])[:, 1]
-    subjects = aggregate_to_subject(validation, probabilities)
+    # Shared with the model evaluation on purpose: both numbers are only
+    # comparable while they are aggregated the same way.
+    subjects = aggregate_by_subject(
+        validation["subject_id"].tolist(),
+        validation["label"].tolist(),
+        probabilities,
+    )
 
     if subjects["label"].nunique() < 2:
         raise BaselineError("Validation fold contains a single class")

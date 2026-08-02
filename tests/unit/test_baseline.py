@@ -11,7 +11,6 @@ from parkindraw.data.splits import run_split
 from parkindraw.evaluation.baseline import (
     FEATURES,
     BaselineError,
-    aggregate_to_subject,
     development_subjects,
     diagnose,
     evaluate_fold,
@@ -67,28 +66,15 @@ def test_features_carry_no_clinical_information(raw_dir):
 # --- Subject-level aggregation ------------------------------------------------
 
 
-def test_aggregation_yields_one_row_per_subject():
-    frame = pd.DataFrame(
-        {
-            "subject_id": ["H01", "H01", "P01", "P01"],
-            "label": [0, 0, 1, 1],
-        }
-    )
-    scored = aggregate_to_subject(frame, np.array([0.2, 0.4, 0.8, 0.6]))
+def test_baseline_and_model_share_one_aggregation():
+    """Both scores are only comparable while aggregated identically."""
+    from parkindraw.evaluation import baseline, metrics
 
-    assert len(scored) == 2
-    assert scored.set_index("subject_id").loc["H01", "probability"] == pytest.approx(
-        0.3
-    )
-    assert scored.set_index("subject_id").loc["P01", "probability"] == pytest.approx(
-        0.7
-    )
+    assert baseline.aggregate_by_subject is metrics.aggregate_by_subject
 
 
-def test_aggregation_preserves_the_label():
-    frame = pd.DataFrame({"subject_id": ["P01", "P01"], "label": [1, 1]})
-    scored = aggregate_to_subject(frame, np.array([0.1, 0.9]))
-    assert scored.loc[0, "label"] == 1
+# The aggregation itself is covered by tests/unit/test_metrics.py; duplicating
+# those assertions here would mirror the duplication just removed from the code.
 
 
 # --- Evaluation -------------------------------------------------------------
