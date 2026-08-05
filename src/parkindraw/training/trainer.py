@@ -25,23 +25,8 @@ from parkindraw.models.resnet18 import build_model, resolve_device
 from parkindraw.preprocessing.augmentation import build_train_transform
 from parkindraw.preprocessing.transforms import build_transform
 
-
-@dataclass
-class TrainingConfig:
-    """Every knob that changes a run. Recorded verbatim next to the results."""
-
-    drawing_type: str = "spiral"
-    fold: int = 0
-    epochs: int = 30
-    batch_size: int = 32
-    learning_rate: float = 1e-3
-    weight_decay: float = 1e-4
-    early_stopping_patience: int = 5
-    seed: int = 42
-    device: str = "auto"
-    num_workers: int = 0
-    raw_dir: str = "data/raw"
-    splits_dir: str = "data/splits"
+# Keep the original import path working while callers migrate to `training.config`.
+from parkindraw.training.config import TrainingConfig
 
 
 @dataclass

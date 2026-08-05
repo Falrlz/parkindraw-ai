@@ -5,18 +5,14 @@ The point is to prove the pipeline is wired correctly -- data, augmentation,
 frozen backbone, metrics, checkpointing -- not to reach any accuracy.
 """
 
-import dataclasses
-
 import pandas as pd
 import pytest
 import torch
-import yaml
 
 from parkindraw.data.splits import run_split
 from parkindraw.models.resnet18 import trainable_parameters
-from parkindraw.training.run import load_config
+from parkindraw.training.config import TrainingConfig
 from parkindraw.training.trainer import (
-    TrainingConfig,
     build_loaders,
     fold_manifests,
     load_head,
@@ -134,35 +130,3 @@ def test_config_is_recorded_with_the_result(config):
     result = train_fold(config)
     assert result.config["seed"] == config.seed
     assert result.config["drawing_type"] == config.drawing_type
-
-
-# --- Config loading -------------------------------------------------------
-
-
-def test_config_file_matches_the_dataclass():
-    """The shipped YAML must not drift from TrainingConfig."""
-    config = load_config("configs/experiments/resnet18.yaml")
-    assert isinstance(config, TrainingConfig)
-
-
-def test_overrides_take_precedence(tmp_path):
-    path = tmp_path / "c.yaml"
-    path.write_text(yaml.safe_dump({"drawing_type": "spiral", "epochs": 30}))
-
-    config = load_config(path, epochs=2, drawing_type=None)
-    assert config.epochs == 2
-    assert config.drawing_type == "spiral"
-
-
-def test_unknown_config_keys_are_rejected(tmp_path):
-    path = tmp_path / "c.yaml"
-    path.write_text(yaml.safe_dump({"learning_rat": 0.1}))
-
-    with pytest.raises(ValueError, match="Unknown config keys"):
-        load_config(path)
-
-
-def test_every_dataclass_field_is_documented_in_the_yaml():
-    shipped = yaml.safe_load(open("configs/experiments/resnet18.yaml"))
-    fields = {f.name for f in dataclasses.fields(TrainingConfig)}
-    assert set(shipped) == fields

@@ -10,25 +10,15 @@ import dataclasses
 import json
 from pathlib import Path
 
-import yaml
-
 from parkindraw.tracking import mlflow_setup
-from parkindraw.training.trainer import TrainingConfig, train_fold
+from parkindraw.training.config import load_training_config
+from parkindraw.training.trainer import train_fold
 
 DEFAULT_CONFIG = "configs/experiments/resnet18.yaml"
 DEFAULT_CHECKPOINT_DIR = "artifacts/checkpoints"
 
-
-def load_config(path: str | Path, **overrides) -> TrainingConfig:
-    """Read the YAML config, then apply any command-line overrides."""
-    settings = yaml.safe_load(Path(path).read_text(encoding="utf-8")) or {}
-    settings.update({k: v for k, v in overrides.items() if v is not None})
-
-    known = {f.name for f in dataclasses.fields(TrainingConfig)}
-    unknown = set(settings) - known
-    if unknown:
-        raise ValueError(f"Unknown config keys: {sorted(unknown)}")
-    return TrainingConfig(**settings)
+# Temporary compatibility alias for callers of the original CLI module.
+load_config = load_training_config
 
 
 def build_argument_parser() -> argparse.ArgumentParser:
@@ -53,7 +43,7 @@ def build_argument_parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     args = build_argument_parser().parse_args(argv)
-    config = load_config(
+    config = load_training_config(
         args.config,
         drawing_type=args.drawing_type,
         fold=args.fold,
