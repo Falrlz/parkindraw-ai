@@ -62,9 +62,7 @@ def main(argv: list[str] | None = None) -> int:
         mlflow_setup.configure()
         with mlflow_setup.start_run(name, dataclasses.asdict(config)):
             result = train_fold(config, checkpoint)
-            mlflow_setup.log_history(result.history)
-            mlflow_setup.log_best(result.best_metrics, result.best_epoch)
-            mlflow_setup.log_checkpoint(checkpoint)
+            mlflow_setup.log_training_result(result, checkpoint)
 
     print(f"Run: {name}")
     print(f"Best epoch: {result.best_epoch} of {len(result.history)} run")

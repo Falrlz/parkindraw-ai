@@ -103,6 +103,11 @@ def test_main_without_tracking_only_trains_and_prints_result(
     monkeypatch.setattr(run, "train_fold", fake_train)
     monkeypatch.setattr(run.mlflow_setup, "configure", unexpected_tracking_call)
     monkeypatch.setattr(run.mlflow_setup, "start_run", unexpected_tracking_call)
+    monkeypatch.setattr(
+        run.mlflow_setup,
+        "log_training_result",
+        unexpected_tracking_call,
+    )
 
     exit_code = run.main(
         [
@@ -153,18 +158,8 @@ def test_main_with_tracking_records_the_completed_run_in_order(
     monkeypatch.setattr(run.mlflow_setup, "start_run", fake_start_run)
     monkeypatch.setattr(
         run.mlflow_setup,
-        "log_history",
-        lambda history: events.append(("history", history)),
-    )
-    monkeypatch.setattr(
-        run.mlflow_setup,
-        "log_best",
-        lambda metrics, epoch: events.append(("best", metrics, epoch)),
-    )
-    monkeypatch.setattr(
-        run.mlflow_setup,
-        "log_checkpoint",
-        lambda path: events.append(("checkpoint", path)),
+        "log_training_result",
+        lambda result, path: events.append(("result", result, path)),
     )
     monkeypatch.setattr(run, "train_fold", fake_train)
 
@@ -182,9 +177,7 @@ def test_main_with_tracking_records_the_completed_run_in_order(
         "configure",
         "start",
         "train",
-        "history",
-        "best",
-        "checkpoint",
+        "result",
         "end",
     ]
 
@@ -195,4 +188,5 @@ def test_main_with_tracking_records_the_completed_run_in_order(
 
     expected_checkpoint = checkpoint_dir / "circle-fold0.pt"
     assert events[2][2] == expected_checkpoint
-    assert events[5][1] == expected_checkpoint
+    assert events[3][1].best_metrics == {"accuracy": 0.75}
+    assert events[3][2] == expected_checkpoint

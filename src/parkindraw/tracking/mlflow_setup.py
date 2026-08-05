@@ -13,14 +13,23 @@ Both the database and the artifacts are regenerable runtime state, not source,
 and are ignored by Git.
 """
 
+from __future__ import annotations
+
+import logging
 from contextlib import contextmanager
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import mlflow
+
+if TYPE_CHECKING:
+    from parkindraw.training.trainer import TrainingResult
 
 DEFAULT_TRACKING_DB = "mlflow.db"
 DEFAULT_ARTIFACT_DIR = "mlruns"
 DEFAULT_EXPERIMENT = "parkindraw"
+
+logger = logging.getLogger(__name__)
 
 
 def configure(
@@ -37,6 +46,7 @@ def configure(
     if mlflow.get_experiment_by_name(experiment) is None:
         mlflow.create_experiment(experiment, artifact_location=artifacts.as_uri())
     mlflow.set_experiment(experiment)
+    logger.info("Configured MLflow experiment %s", experiment)
 
 
 def run_name(drawing_type: str, fold: int) -> str:
@@ -47,6 +57,7 @@ def run_name(drawing_type: str, fold: int) -> str:
 @contextmanager
 def start_run(name: str, config: dict):
     """Open a run with its parameters already logged."""
+    logger.info("Starting MLflow run %s", name)
     with mlflow.start_run(run_name=name) as active:
         mlflow.log_params(config)
         yield active
@@ -72,3 +83,18 @@ def log_best(metrics: dict, best_epoch: int) -> None:
 def log_checkpoint(checkpoint_path: str | Path) -> None:
     if Path(checkpoint_path).is_file():
         mlflow.log_artifact(str(checkpoint_path))
+
+
+def log_training_result(
+    result: TrainingResult,
+    checkpoint_path: str | Path,
+) -> None:
+    """Record a completed training result and its checkpoint artifact."""
+    log_history(result.history)
+    log_best(result.best_metrics, result.best_epoch)
+    log_checkpoint(checkpoint_path)
+    logger.info(
+        "Logged training result from epoch %d and checkpoint %s",
+        result.best_epoch,
+        checkpoint_path,
+    )

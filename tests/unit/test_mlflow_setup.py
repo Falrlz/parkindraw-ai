@@ -1,6 +1,7 @@
 """Characterization tests for the local MLflow adapter."""
 
 from contextlib import contextmanager
+from types import SimpleNamespace
 
 from parkindraw.tracking import mlflow_setup
 
@@ -160,3 +161,40 @@ def test_log_checkpoint_only_logs_an_existing_file(monkeypatch, tmp_path):
     mlflow_setup.log_checkpoint(checkpoint)
 
     assert logged == [str(checkpoint)]
+
+
+def test_log_training_result_records_history_best_metrics_and_checkpoint(
+    monkeypatch,
+    tmp_path,
+):
+    checkpoint = tmp_path / "model.pt"
+    result = SimpleNamespace(
+        history=[{"epoch": 1, "accuracy": 0.75}],
+        best_metrics={"accuracy": 0.75},
+        best_epoch=1,
+    )
+    calls = []
+
+    monkeypatch.setattr(
+        mlflow_setup,
+        "log_history",
+        lambda history: calls.append(("history", history)),
+    )
+    monkeypatch.setattr(
+        mlflow_setup,
+        "log_best",
+        lambda metrics, epoch: calls.append(("best", metrics, epoch)),
+    )
+    monkeypatch.setattr(
+        mlflow_setup,
+        "log_checkpoint",
+        lambda path: calls.append(("checkpoint", path)),
+    )
+
+    mlflow_setup.log_training_result(result, checkpoint)
+
+    assert calls == [
+        ("history", result.history),
+        ("best", result.best_metrics, result.best_epoch),
+        ("checkpoint", checkpoint),
+    ]
