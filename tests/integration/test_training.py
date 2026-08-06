@@ -11,6 +11,7 @@ import torch
 
 from parkindraw.data.splits import run_split
 from parkindraw.models.resnet18 import trainable_parameters
+from parkindraw.pipelines.training import run_training_pipeline
 from parkindraw.training.config import TrainingConfig
 from parkindraw.training.trainer import (
     build_loaders,
@@ -87,10 +88,14 @@ def test_augmentation_is_applied_to_training_only(config):
 # --- Training loop --------------------------------------------------------
 
 
-def test_training_runs_end_to_end(config):
-    result = train_fold(config)
+def test_training_pipeline_runs_end_to_end(config, tmp_path):
+    pipeline_result = run_training_pipeline(config, tmp_path, tracker=None)
+    result = pipeline_result.training
+
     assert len(result.history) == config.epochs
     assert result.best_epoch == 1
+    assert pipeline_result.run_name == "spiral-fold0"
+    assert pipeline_result.checkpoint_path.is_file()
 
     entry = result.history[0]
     assert entry["train_loss"] > 0

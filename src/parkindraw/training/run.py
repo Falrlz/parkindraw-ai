@@ -6,13 +6,11 @@ alongside everything else, so a run can always be reconstructed.
 """
 
 import argparse
-import dataclasses
 import json
-from pathlib import Path
 
+from parkindraw.pipelines.training import run_training_pipeline
 from parkindraw.tracking import mlflow_setup
 from parkindraw.training.config import load_training_config
-from parkindraw.training.trainer import train_fold
 
 DEFAULT_CONFIG = "configs/experiments/resnet18.yaml"
 DEFAULT_CHECKPOINT_DIR = "artifacts/checkpoints"
@@ -53,21 +51,17 @@ def main(argv: list[str] | None = None) -> int:
         device=args.device,
     )
 
-    name = mlflow_setup.run_name(config.drawing_type, config.fold)
-    checkpoint = Path(args.checkpoint_dir) / f"{name}.pt"
+    pipeline_result = run_training_pipeline(
+        config,
+        args.checkpoint_dir,
+        tracker=None if args.no_tracking else mlflow_setup,
+    )
+    result = pipeline_result.training
 
-    if args.no_tracking:
-        result = train_fold(config, checkpoint)
-    else:
-        mlflow_setup.configure()
-        with mlflow_setup.start_run(name, dataclasses.asdict(config)):
-            result = train_fold(config, checkpoint)
-            mlflow_setup.log_training_result(result, checkpoint)
-
-    print(f"Run: {name}")
+    print(f"Run: {pipeline_result.run_name}")
     print(f"Best epoch: {result.best_epoch} of {len(result.history)} run")
     print(json.dumps(result.best_metrics, indent=2))
-    print(f"Checkpoint: {checkpoint}")
+    print(f"Checkpoint: {pipeline_result.checkpoint_path}")
     return 0
 
 

@@ -49,11 +49,6 @@ def configure(
     logger.info("Configured MLflow experiment %s", experiment)
 
 
-def run_name(drawing_type: str, fold: int) -> str:
-    """A name that says which model and which fold, e.g. `spiral-fold0`."""
-    return f"{drawing_type}-fold{fold}"
-
-
 @contextmanager
 def start_run(name: str, config: dict):
     """Open a run with its parameters already logged."""

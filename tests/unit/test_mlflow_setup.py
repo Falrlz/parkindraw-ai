@@ -6,10 +6,6 @@ from types import SimpleNamespace
 from parkindraw.tracking import mlflow_setup
 
 
-def test_run_name_identifies_drawing_type_and_fold():
-    assert mlflow_setup.run_name("meander", 2) == "meander-fold2"
-
-
 def test_configure_creates_storage_and_selects_existing_experiment(
     monkeypatch,
     tmp_path,

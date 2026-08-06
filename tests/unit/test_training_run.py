@@ -1,6 +1,5 @@
 """Characterization tests for the current training command-line workflow."""
 
-from contextlib import contextmanager
 from types import SimpleNamespace
 
 import yaml
@@ -21,6 +20,15 @@ def training_result():
         history=[{"epoch": 1, "accuracy": 0.75}],
         best_epoch=1,
         best_metrics={"accuracy": 0.75},
+    )
+
+
+def pipeline_result(checkpoint_dir, name, result=None):
+    """Return the pipeline contract consumed by the current CLI."""
+    return SimpleNamespace(
+        run_name=name,
+        checkpoint_path=checkpoint_dir / f"{name}.pt",
+        training=result or training_result(),
     )
 
 
@@ -93,21 +101,11 @@ def test_main_without_tracking_only_trains_and_prints_result(
     checkpoint_dir = tmp_path / "checkpoints"
     calls = []
 
-    def fake_train(config, checkpoint):
-        calls.append((config, checkpoint))
-        return training_result()
+    def fake_pipeline(config, received_checkpoint_dir, *, tracker):
+        calls.append((config, received_checkpoint_dir, tracker))
+        return pipeline_result(checkpoint_dir, "spiral-fold2")
 
-    def unexpected_tracking_call(*args, **kwargs):
-        raise AssertionError("tracking must stay disabled")
-
-    monkeypatch.setattr(run, "train_fold", fake_train)
-    monkeypatch.setattr(run.mlflow_setup, "configure", unexpected_tracking_call)
-    monkeypatch.setattr(run.mlflow_setup, "start_run", unexpected_tracking_call)
-    monkeypatch.setattr(
-        run.mlflow_setup,
-        "log_training_result",
-        unexpected_tracking_call,
-    )
+    monkeypatch.setattr(run, "run_training_pipeline", fake_pipeline)
 
     exit_code = run.main(
         [
@@ -121,47 +119,33 @@ def test_main_without_tracking_only_trains_and_prints_result(
 
     assert exit_code == 0
     assert len(calls) == 1
-    config, checkpoint = calls[0]
+    config, received_checkpoint_dir, tracker = calls[0]
     assert config.drawing_type == "spiral"
     assert config.fold == 2
-    assert checkpoint == checkpoint_dir / "spiral-fold2.pt"
+    assert received_checkpoint_dir == str(checkpoint_dir)
+    assert tracker is None
 
     output = capsys.readouterr().out
+    checkpoint = checkpoint_dir / "spiral-fold2.pt"
     assert "Run: spiral-fold2" in output
     assert "Best epoch: 1 of 1 run" in output
     assert '"accuracy": 0.75' in output
     assert f"Checkpoint: {checkpoint}" in output
 
 
-def test_main_with_tracking_records_the_completed_run_in_order(
+def test_main_with_tracking_passes_mlflow_adapter_to_pipeline(
     monkeypatch,
     tmp_path,
 ):
     config_path = write_config(tmp_path, drawing_type="circle", fold=0, epochs=1)
     checkpoint_dir = tmp_path / "checkpoints"
-    events = []
+    calls = []
 
-    def fake_configure():
-        events.append(("configure",))
+    def fake_pipeline(config, received_checkpoint_dir, *, tracker):
+        calls.append((config, received_checkpoint_dir, tracker))
+        return pipeline_result(checkpoint_dir, "circle-fold0")
 
-    @contextmanager
-    def fake_start_run(name, config):
-        events.append(("start", name, config))
-        yield
-        events.append(("end",))
-
-    def fake_train(config, checkpoint):
-        events.append(("train", config, checkpoint))
-        return training_result()
-
-    monkeypatch.setattr(run.mlflow_setup, "configure", fake_configure)
-    monkeypatch.setattr(run.mlflow_setup, "start_run", fake_start_run)
-    monkeypatch.setattr(
-        run.mlflow_setup,
-        "log_training_result",
-        lambda result, path: events.append(("result", result, path)),
-    )
-    monkeypatch.setattr(run, "train_fold", fake_train)
+    monkeypatch.setattr(run, "run_training_pipeline", fake_pipeline)
 
     exit_code = run.main(
         [
@@ -173,20 +157,9 @@ def test_main_with_tracking_records_the_completed_run_in_order(
     )
 
     assert exit_code == 0
-    assert [event[0] for event in events] == [
-        "configure",
-        "start",
-        "train",
-        "result",
-        "end",
-    ]
-
-    _, run_name, logged_config = events[1]
-    assert run_name == "circle-fold0"
-    assert logged_config["drawing_type"] == "circle"
-    assert logged_config["fold"] == 0
-
-    expected_checkpoint = checkpoint_dir / "circle-fold0.pt"
-    assert events[2][2] == expected_checkpoint
-    assert events[3][1].best_metrics == {"accuracy": 0.75}
-    assert events[3][2] == expected_checkpoint
+    assert len(calls) == 1
+    config, received_checkpoint_dir, tracker = calls[0]
+    assert config.drawing_type == "circle"
+    assert config.fold == 0
+    assert received_checkpoint_dir == str(checkpoint_dir)
+    assert tracker is run.mlflow_setup
