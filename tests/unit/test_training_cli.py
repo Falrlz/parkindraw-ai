@@ -1,10 +1,14 @@
-"""Characterization tests for the current training command-line workflow."""
+"""Tests for the training CLI and its temporary compatibility wrapper."""
 
+import subprocess
+import sys
+from pathlib import Path
 from types import SimpleNamespace
 
 import yaml
+from scripts import train as cli
 
-from parkindraw.training import run
+from parkindraw.training import run as legacy_run
 
 
 def write_config(tmp_path, **settings):
@@ -23,20 +27,20 @@ def training_result():
     )
 
 
-def pipeline_result(checkpoint_dir, name, result=None):
-    """Return the pipeline contract consumed by the current CLI."""
+def pipeline_result(checkpoint_dir, name):
+    """Return the pipeline contract consumed by the CLI."""
     return SimpleNamespace(
         run_name=name,
         checkpoint_path=checkpoint_dir / f"{name}.pt",
-        training=result or training_result(),
+        training=training_result(),
     )
 
 
 def test_parser_defaults_match_the_documented_local_command():
-    args = run.build_argument_parser().parse_args([])
+    args = cli.build_argument_parser().parse_args([])
 
-    assert args.config == run.DEFAULT_CONFIG
-    assert args.checkpoint_dir == run.DEFAULT_CHECKPOINT_DIR
+    assert args.config == cli.DEFAULT_CONFIG
+    assert args.checkpoint_dir == cli.DEFAULT_CHECKPOINT_DIR
     assert args.drawing_type is None
     assert args.fold is None
     assert args.epochs is None
@@ -47,7 +51,7 @@ def test_parser_defaults_match_the_documented_local_command():
 
 
 def test_parser_accepts_every_supported_override():
-    args = run.build_argument_parser().parse_args(
+    args = cli.build_argument_parser().parse_args(
         [
             "--config",
             "custom.yaml",
@@ -82,17 +86,7 @@ def test_parser_accepts_every_supported_override():
     }
 
 
-def test_load_config_preserves_yaml_values_when_overrides_are_none(tmp_path):
-    path = write_config(tmp_path, drawing_type="meander", fold=1, epochs=6)
-
-    config = run.load_config(path, drawing_type=None, fold=None, epochs=None)
-
-    assert config.drawing_type == "meander"
-    assert config.fold == 1
-    assert config.epochs == 6
-
-
-def test_main_without_tracking_only_trains_and_prints_result(
+def test_main_without_tracking_only_runs_pipeline_and_prints_result(
     monkeypatch,
     tmp_path,
     capsys,
@@ -105,9 +99,9 @@ def test_main_without_tracking_only_trains_and_prints_result(
         calls.append((config, received_checkpoint_dir, tracker))
         return pipeline_result(checkpoint_dir, "spiral-fold2")
 
-    monkeypatch.setattr(run, "run_training_pipeline", fake_pipeline)
+    monkeypatch.setattr(cli, "run_training_pipeline", fake_pipeline)
 
-    exit_code = run.main(
+    exit_code = cli.main(
         [
             "--config",
             str(config_path),
@@ -145,9 +139,9 @@ def test_main_with_tracking_passes_mlflow_adapter_to_pipeline(
         calls.append((config, received_checkpoint_dir, tracker))
         return pipeline_result(checkpoint_dir, "circle-fold0")
 
-    monkeypatch.setattr(run, "run_training_pipeline", fake_pipeline)
+    monkeypatch.setattr(cli, "run_training_pipeline", fake_pipeline)
 
-    exit_code = run.main(
+    exit_code = cli.main(
         [
             "--config",
             str(config_path),
@@ -162,4 +156,32 @@ def test_main_with_tracking_passes_mlflow_adapter_to_pipeline(
     assert config.drawing_type == "circle"
     assert config.fold == 0
     assert received_checkpoint_dir == str(checkpoint_dir)
-    assert tracker is run.mlflow_setup
+    assert tracker is cli.mlflow_setup
+
+
+def test_legacy_module_reexports_the_canonical_cli_contract():
+    assert legacy_run.DEFAULT_CONFIG == cli.DEFAULT_CONFIG
+    assert legacy_run.DEFAULT_CHECKPOINT_DIR == cli.DEFAULT_CHECKPOINT_DIR
+    assert legacy_run.build_argument_parser is cli.build_argument_parser
+    assert legacy_run.main is cli.main
+
+
+def test_script_returns_nonzero_for_an_invalid_config(tmp_path):
+    config_path = write_config(tmp_path, learning_rat=0.1)
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(Path("scripts/train.py").resolve()),
+            "--config",
+            str(config_path),
+            "--no-tracking",
+        ],
+        cwd=Path.cwd(),
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert completed.returncode != 0
+    assert "Unknown config keys" in completed.stderr
