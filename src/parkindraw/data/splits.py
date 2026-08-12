@@ -16,7 +16,6 @@ duplicate are split together. Clusters are derived from file hashes at runtime
 the result against those hashes directly.
 """
 
-import argparse
 import hashlib
 import json
 from collections.abc import Mapping
@@ -363,37 +362,18 @@ def run_split(
     return summary
 
 
-def build_argument_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(
-        description="Build dataset splits that are safe from subject leakage.",
-    )
-    parser.add_argument("--raw-dir", default="data/raw")
-    parser.add_argument("--output-dir", default="data/splits")
-    parser.add_argument("--holdout-size", type=float, default=DEFAULT_HOLDOUT_SIZE)
-    parser.add_argument("--n-splits", type=int, default=DEFAULT_N_SPLITS)
-    parser.add_argument("--seed", type=int, default=DEFAULT_SEED)
-    return parser
+def build_argument_parser():
+    """Compatibility wrapper for the split CLI now located in `scripts`."""
+    from scripts.create_splits import build_argument_parser as build_parser
+
+    return build_parser()
 
 
 def main(argv: list[str] | None = None) -> int:
-    args = build_argument_parser().parse_args(argv)
-    summary = run_split(
-        args.raw_dir,
-        args.output_dir,
-        holdout_size=args.holdout_size,
-        n_splits=args.n_splits,
-        seed=args.seed,
-    )
-    print(
-        f"Split complete: {summary['total_subjects']} subjects "
-        f"({summary['development_subjects']} development, "
-        f"{summary['holdout_subjects']} holdout), "
-        f"{summary['n_splits']} folds, "
-        f"{summary['sessions']} sessions."
-    )
-    print(f"Duplicate clusters merged: {len(summary['duplicate_clusters'])}")
-    print(f"Artifacts: {args.output_dir}")
-    return 0
+    """Compatibility wrapper for the split CLI now located in `scripts`."""
+    from scripts.create_splits import main as cli_main
+
+    return cli_main(argv)
 
 
 if __name__ == "__main__":
