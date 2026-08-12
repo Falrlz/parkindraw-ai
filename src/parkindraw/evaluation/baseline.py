@@ -240,21 +240,3 @@ def run_baseline(
             newline="\n",
         )
     return summary
-
-
-def build_argument_parser():
-    """Compatibility wrapper for the baseline CLI now located in `scripts`."""
-    from scripts.evaluate_baseline import build_argument_parser as build_parser
-
-    return build_parser()
-
-
-def main(argv: list[str] | None = None) -> int:
-    """Compatibility wrapper for the baseline CLI now located in `scripts`."""
-    from scripts.evaluate_baseline import main as cli_main
-
-    return cli_main(argv)
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())

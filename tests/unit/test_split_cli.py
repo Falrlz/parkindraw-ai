@@ -2,7 +2,7 @@
 
 from scripts import create_splits as cli
 
-from parkindraw.data import splits as legacy_splits
+from parkindraw.data import splits as core_splits
 
 
 def split_summary():
@@ -22,9 +22,9 @@ def test_parser_defaults_match_the_project_split_defaults():
 
     assert args.raw_dir == "data/raw"
     assert args.output_dir == "data/splits"
-    assert args.holdout_size == legacy_splits.DEFAULT_HOLDOUT_SIZE
-    assert args.n_splits == legacy_splits.DEFAULT_N_SPLITS
-    assert args.seed == legacy_splits.DEFAULT_SEED
+    assert args.holdout_size == core_splits.DEFAULT_HOLDOUT_SIZE
+    assert args.n_splits == core_splits.DEFAULT_N_SPLITS
+    assert args.seed == core_splits.DEFAULT_SEED
 
 
 def test_parser_accepts_every_supported_override():
@@ -89,9 +89,3 @@ def test_main_runs_split_generation_and_prints_summary(monkeypatch, capsys):
     assert "3 folds, 8 sessions" in output
     assert "Duplicate clusters merged: 1" in output
     assert "Artifacts: custom-splits" in output
-
-
-def test_legacy_module_reexports_the_canonical_cli_contract():
-    assert vars(legacy_splits.build_argument_parser().parse_args([])) == vars(
-        cli.build_argument_parser().parse_args([])
-    )

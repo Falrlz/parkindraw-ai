@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from parkindraw.training import run, trainer
+from parkindraw.training import trainer
 from parkindraw.training.config import TrainingConfig, load_training_config
 
 
@@ -58,10 +58,6 @@ def test_every_dataclass_field_is_documented_in_the_shipped_yaml():
     field_names = {field.name for field in dataclasses.fields(TrainingConfig)}
 
     assert set(shipped) == field_names
-
-
-def test_original_run_loader_remains_a_compatibility_alias():
-    assert run.load_config is load_training_config
 
 
 def test_original_trainer_config_remains_a_compatibility_import():

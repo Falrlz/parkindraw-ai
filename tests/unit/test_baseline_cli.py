@@ -2,7 +2,7 @@
 
 from scripts import evaluate_baseline as cli
 
-from parkindraw.evaluation import baseline as legacy_baseline
+from parkindraw.evaluation import baseline as core_baseline
 
 
 def baseline_summary():
@@ -30,8 +30,8 @@ def test_parser_defaults_match_the_project_baseline_defaults():
     assert args.raw_dir == "data/raw"
     assert args.splits_dir == "data/splits"
     assert args.output == "reports/metadata_baseline.json"
-    assert args.n_splits == legacy_baseline.DEFAULT_N_SPLITS
-    assert args.seed == legacy_baseline.DEFAULT_SEED
+    assert args.n_splits == core_baseline.DEFAULT_N_SPLITS
+    assert args.seed == core_baseline.DEFAULT_SEED
 
 
 def test_parser_accepts_every_supported_override():
@@ -98,9 +98,3 @@ def test_main_runs_baseline_evaluation_and_prints_summary(monkeypatch, capsys):
     assert "spiral  : 0.800 +/- 0.050" in output
     assert "Any model must clearly exceed 0.800" in output
     assert "Report: custom-report.json" in output
-
-
-def test_legacy_module_reexports_the_canonical_cli_contract():
-    assert vars(legacy_baseline.build_argument_parser().parse_args([])) == vars(
-        cli.build_argument_parser().parse_args([])
-    )

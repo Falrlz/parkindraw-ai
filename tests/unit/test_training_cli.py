@@ -8,8 +8,6 @@ from types import SimpleNamespace
 import yaml
 from scripts import train as cli
 
-from parkindraw.training import run as legacy_run
-
 
 def write_config(tmp_path, **settings):
     """Write the smallest useful training config for CLI tests."""
@@ -157,13 +155,6 @@ def test_main_with_tracking_passes_mlflow_adapter_to_pipeline(
     assert config.fold == 0
     assert received_checkpoint_dir == str(checkpoint_dir)
     assert tracker is cli.mlflow_setup
-
-
-def test_legacy_module_reexports_the_canonical_cli_contract():
-    assert legacy_run.DEFAULT_CONFIG == cli.DEFAULT_CONFIG
-    assert legacy_run.DEFAULT_CHECKPOINT_DIR == cli.DEFAULT_CHECKPOINT_DIR
-    assert legacy_run.build_argument_parser is cli.build_argument_parser
-    assert legacy_run.main is cli.main
 
 
 def test_script_returns_nonzero_for_an_invalid_config(tmp_path):

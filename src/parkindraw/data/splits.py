@@ -360,21 +360,3 @@ def run_split(
     summary = _summarise(manifest, holdout, folds, sessions, clusters, config)
     write_splits(output_dir, holdout, folds, sessions, summary)
     return summary
-
-
-def build_argument_parser():
-    """Compatibility wrapper for the split CLI now located in `scripts`."""
-    from scripts.create_splits import build_argument_parser as build_parser
-
-    return build_parser()
-
-
-def main(argv: list[str] | None = None) -> int:
-    """Compatibility wrapper for the split CLI now located in `scripts`."""
-    from scripts.create_splits import main as cli_main
-
-    return cli_main(argv)
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())
