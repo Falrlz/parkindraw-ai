@@ -3,7 +3,7 @@
 Interpretation of `metadata_baseline.json`. Regenerate both with:
 
 ```bash
-uv run python -m parkindraw.evaluation.baseline
+uv run --extra data --extra train python scripts/evaluate_baseline.py
 ```
 
 ## Result
