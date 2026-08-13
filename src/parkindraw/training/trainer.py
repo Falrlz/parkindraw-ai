@@ -141,7 +141,7 @@ def train_fold(
         train_manifest, validation_manifest, config
     )
 
-    model = build_model(device=device)
+    model = build_model(device=device, dropout=config.dropout)
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.AdamW(
         (p for p in model.parameters() if p.requires_grad),
@@ -195,7 +195,12 @@ def train_fold(
     return result
 
 
-def load_head(checkpoint_path: str | Path, device: str | torch.device = "cpu"):
+def load_head(
+    checkpoint_path: str | Path,
+    device: str | torch.device = "cpu",
+    *,
+    dropout: float = 0.0,
+):
     """Rebuild a model from a saved head.
 
     Only the head is stored: the backbone is frozen pretrained weights, so
@@ -203,6 +208,6 @@ def load_head(checkpoint_path: str | Path, device: str | torch.device = "cpu"):
     `map_location` keeps checkpoints written on a GPU readable on CPU.
     """
     device = resolve_device(device) if isinstance(device, str) else device
-    model = build_model(device=device)
+    model = build_model(device=device, dropout=dropout)
     model.head.load_state_dict(torch.load(checkpoint_path, map_location=device))
     return model

@@ -28,13 +28,19 @@ class FrozenResNet18(nn.Module):
     module is switched to training. Only the head follows the requested mode.
     """
 
-    def __init__(self, num_classes: int = NUM_CLASSES, pretrained: bool = True) -> None:
+    def __init__(
+        self,
+        num_classes: int = NUM_CLASSES,
+        pretrained: bool = True,
+        dropout: float = 0.0,
+    ) -> None:
         super().__init__()
         weights = ResNet18_Weights.IMAGENET1K_V1 if pretrained else None
         backbone = resnet18(weights=weights)
 
         backbone.fc = nn.Identity()
         self.backbone = backbone
+        self.dropout = nn.Dropout(dropout)
         self.head = nn.Linear(FEATURE_DIM, num_classes)
 
         for parameter in self.backbone.parameters():
@@ -51,20 +57,25 @@ class FrozenResNet18(nn.Module):
         # backward pass cheap enough to train comfortably on CPU.
         with torch.no_grad():
             features = self.backbone(images)
-        return self.head(features)
+        return self.head(self.dropout(features))
 
 
 def build_model(
     num_classes: int = NUM_CLASSES,
     *,
     pretrained: bool = True,
+    dropout: float = 0.0,
     device: str | torch.device = "cpu",
 ) -> FrozenResNet18:
     """Build the model and move it to `device`.
 
     `device` is always explicit so the same code runs unchanged on CPU and GPU.
     """
-    model = FrozenResNet18(num_classes=num_classes, pretrained=pretrained)
+    model = FrozenResNet18(
+        num_classes=num_classes,
+        pretrained=pretrained,
+        dropout=dropout,
+    )
     return model.to(device)
 
 

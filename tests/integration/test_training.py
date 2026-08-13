@@ -135,3 +135,4 @@ def test_config_is_recorded_with_the_result(config):
     result = train_fold(config)
     assert result.config["seed"] == config.seed
     assert result.config["drawing_type"] == config.drawing_type
+    assert result.config["dropout"] == config.dropout

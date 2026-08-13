@@ -16,6 +16,7 @@ class TrainingConfig:
     batch_size: int = 32
     learning_rate: float = 1e-3
     weight_decay: float = 1e-4
+    dropout: float = 0.0
     early_stopping_patience: int = 5
     seed: int = 42
     device: str = "auto"

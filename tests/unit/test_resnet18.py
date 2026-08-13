@@ -81,6 +81,13 @@ def test_head_maps_from_the_backbone_feature_dim():
     assert model.head.out_features == NUM_CLASSES
 
 
+def test_dropout_is_configurable_without_changing_the_linear_head():
+    model = build_model(pretrained=False, dropout=0.3)
+
+    assert model.dropout.p == 0.3
+    assert model.head.in_features == FEATURE_DIM
+
+
 def test_gradients_reach_the_head_and_nothing_else():
     model = _model()
     model.train()
