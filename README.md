@@ -20,7 +20,7 @@ Current implementation status:
 | 0 | Repository foundation and reproducible data audit | Implemented |
 | 1 | Leakage-safe subject splits | Implemented; validated by quality gates |
 | 2 | Fixed ResNet-18 pipeline and metadata baseline | Implemented |
-| 3 | Optuna studies per drawing type | Next |
+| 3 | Optuna studies per drawing type | Workflow implemented; full studies pending |
 | 4+ | Fusion, inference, API, and application | Planned |
 
 The detailed roadmap, data card, and learning guide are maintained locally
@@ -92,6 +92,31 @@ uv run --extra data --extra train python scripts/train.py \
   --device cpu \
   --no-tracking
 ```
+
+Run or resume the bounded Optuna studies for all three drawing types:
+
+```bash
+uv run --extra data --extra train python scripts/optimize.py \
+  --config configs/experiments/optuna.yaml
+```
+
+Each drawing type has an independent persistent study. Re-running the command
+continues only the remaining trials up to the configured total budget; it does
+not add another full budget. For a one-trial CPU smoke check:
+
+```bash
+uv run --extra data --extra train python scripts/optimize.py \
+  --drawing-type spiral \
+  --n-trials 1 \
+  --epochs 1 \
+  --device cpu \
+  --no-tracking
+```
+
+Study summaries are written to `reports/optimization/` and contain the search
+configuration, every trial, fold-level metrics, runtime, best parameters, and
+MLflow run IDs when tracking is enabled. Study databases and MLflow runtime
+data remain ignored because they are regenerable local artifacts.
 
 The training configuration is loaded by
 `parkindraw.training.config.load_training_config()`. A run returns a structured

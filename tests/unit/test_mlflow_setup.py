@@ -194,3 +194,53 @@ def test_log_training_result_records_history_best_metrics_and_checkpoint(
         ("best", result.best_metrics, result.best_epoch),
         ("checkpoint", checkpoint),
     ]
+
+
+def test_log_optimization_trial_records_parameters_metrics_and_state(monkeypatch):
+    calls = []
+    monkeypatch.setattr(
+        mlflow_setup.mlflow,
+        "log_params",
+        lambda params: calls.append(("params", params)),
+    )
+    monkeypatch.setattr(
+        mlflow_setup.mlflow,
+        "set_tag",
+        lambda key, value: calls.append(("tag", key, value)),
+    )
+    monkeypatch.setattr(
+        mlflow_setup.mlflow,
+        "log_metric",
+        lambda key, value: calls.append(("metric", key, value)),
+    )
+    trial = SimpleNamespace(
+        params={"dropout": 0.2, "batch_size": 16},
+        user_attrs={
+            "fold_metrics": [
+                {
+                    "fold": 0,
+                    "roc_auc": 0.8,
+                    "accuracy": 0.75,
+                    "f1": 0.7,
+                    "train_loss": 0.4,
+                    "validation_loss": 0.5,
+                    "duration_seconds": 2.5,
+                }
+            ],
+            "mean_roc_auc": 0.8,
+            "mean_accuracy": 0.75,
+            "mean_f1": 0.7,
+            "runtime_seconds": 2.5,
+        },
+    )
+
+    mlflow_setup.log_optimization_trial(trial, 0.8, "complete")
+
+    assert calls[:3] == [
+        ("params", trial.params),
+        ("tag", "optuna_state", "complete"),
+        ("metric", "objective_mean_roc_auc", 0.8),
+    ]
+    assert ("metric", "fold_0_roc_auc", 0.8) in calls
+    assert ("metric", "mean_f1", 0.7) in calls
+    assert ("metric", "runtime_seconds", 2.5) in calls

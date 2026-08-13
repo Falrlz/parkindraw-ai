@@ -23,6 +23,8 @@ from typing import TYPE_CHECKING
 import mlflow
 
 if TYPE_CHECKING:
+    import optuna
+
     from parkindraw.training.trainer import TrainingResult
 
 DEFAULT_TRACKING_DB = "mlflow.db"
@@ -93,3 +95,34 @@ def log_training_result(
         result.best_epoch,
         checkpoint_path,
     )
+
+
+def log_optimization_trial(
+    trial: optuna.Trial,
+    value: float | None,
+    state: str,
+) -> None:
+    """Record one Optuna trial's parameters, fold metrics, and outcome."""
+    mlflow.log_params(trial.params)
+    mlflow.set_tag("optuna_state", state)
+    if value is not None:
+        mlflow.log_metric("objective_mean_roc_auc", value)
+
+    for entry in trial.user_attrs.get("fold_metrics", []):
+        fold = int(entry["fold"])
+        for key in (
+            "roc_auc",
+            "accuracy",
+            "f1",
+            "train_loss",
+            "validation_loss",
+            "duration_seconds",
+        ):
+            metric = entry.get(key)
+            if isinstance(metric, (int, float)):
+                mlflow.log_metric(f"fold_{fold}_{key}", metric)
+
+    for key in ("mean_roc_auc", "mean_accuracy", "mean_f1", "runtime_seconds"):
+        metric = trial.user_attrs.get(key)
+        if isinstance(metric, (int, float)):
+            mlflow.log_metric(key, metric)
