@@ -1,10 +1,10 @@
 # Data & Datasets (Raw, Interim, Processed)
-data/raw/
-data/interim/
-data/processed/
+ml/data/raw/
+ml/data/interim/
+ml/data/processed/
 
 # Model Binaries & Runtime Artifacts
-artifacts/
+ml/artifacts/
 *.pt
 *.pth
 *.onnx
@@ -12,7 +12,7 @@ artifacts/
 *.h5
 
 # MLflow Tracking Data
-mlruns/
+ml/mlruns/
 *.db
 infra/mlflow/data/
 
@@ -49,10 +49,10 @@ wheels/
 coverage.xml
 htmlcov/
 .mypy_cache/
-data/.parkindraw-audit-*/
+ml/data/.parkindraw-audit-*/
 
 # PDF Literature Files
-research/literature/articles/*.pdf
+research/articles/*.pdf
 *.pdf
 
 # Local Project Documentation

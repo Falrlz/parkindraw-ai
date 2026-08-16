@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "AI-assisted Parkinson's screening through drawing analysis"
 readme = "README.md"
 requires-python = ">=3.10,<3.13"
-license = { file = "LICENSE" }
+license = "MIT"
 authors = [
   { name = "ParkinDraw AI Project" },
 ]
@@ -68,14 +68,14 @@ minversion = "8.0"
 addopts = "-ra -q --import-mode=importlib"
 testpaths = [
   "tests",
-  "backend/tests",
+  "../backend/tests",
 ]
-pythonpath = ["src"]
+pythonpath = [".", "src"]
 
 [tool.ruff]
 line-length = 88
 target-version = "py310"
-src = ["src", "backend", "tests"]
+src = ["src", "../backend", "tests"]
 
 [tool.ruff.lint]
 select = ["E4", "E7", "E9", "F", "I", "UP", "BLE"]
