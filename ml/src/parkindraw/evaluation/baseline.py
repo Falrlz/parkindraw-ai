@@ -188,6 +188,23 @@ def load_folds(
 ) -> list[pd.DataFrame]:
     """Read the cross-validation folds written by `parkindraw.data.splits`."""
     directory = Path(splits_dir)
+    master_path = directory / "master_manifest.csv"
+    if master_path.is_file():
+        master = pd.read_csv(master_path)
+        folds = []
+        for number in range(n_splits):
+            fold_col = f"fold_{number}"
+            subset = (
+                master.dropna(subset=[fold_col])[
+                    ["subject_id", "class_name", "label", fold_col]
+                ]
+                .drop_duplicates()
+                .rename(columns={fold_col: "split"})
+                .sort_values("subject_id", ignore_index=True)
+            )
+            folds.append(subset)
+        return folds
+
     folds = []
     for number in range(n_splits):
         path = directory / f"fold_{number}.csv"

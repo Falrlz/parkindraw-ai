@@ -110,9 +110,9 @@ def test_highest_matches_the_per_drawing_results(baseline):
 
 
 def test_folds_never_contain_holdout_subjects(splits_dir):
-    holdout = pd.read_csv(splits_dir / "holdout.csv")
-    locked = set(holdout.loc[holdout.partition == "holdout", "subject_id"])
-    development = set(holdout.loc[holdout.partition == "development", "subject_id"])
+    master = pd.read_csv(splits_dir / "master_manifest.csv")
+    locked = set(master.loc[master.partition == "holdout", "subject_id"])
+    development = set(master.loc[master.partition == "development", "subject_id"])
 
     folds = load_folds(splits_dir, N_SPLITS)
     for number, fold in enumerate(folds):
@@ -122,8 +122,8 @@ def test_folds_never_contain_holdout_subjects(splits_dir):
 
 def test_reported_counts_exclude_the_holdout(raw_dir, splits_dir, baseline):
     """Regression: counts once described the whole manifest, holdout included."""
-    holdout = pd.read_csv(splits_dir / "holdout.csv")
-    development = set(holdout.loc[holdout.partition == "development", "subject_id"])
+    master = pd.read_csv(splits_dir / "master_manifest.csv")
+    development = set(master.loc[master.partition == "development", "subject_id"])
 
     manifest = build_manifest(raw_dir)
     manifest = manifest[manifest.subject_id.isin(development)]

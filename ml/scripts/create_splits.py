@@ -1,4 +1,4 @@
-"""Command-line entry point for leakage-safe dataset split generation."""
+"""Command-line entry point for leakage-safe dataset preparation and split generation."""
 
 import argparse
 
@@ -6,15 +6,15 @@ from parkindraw.data.splits import (
     DEFAULT_HOLDOUT_SIZE,
     DEFAULT_N_SPLITS,
     DEFAULT_SEED,
-    run_split,
 )
+from parkindraw.pipelines.data_preparation import run_data_preparation_pipeline
 
 
 def build_argument_parser() -> argparse.ArgumentParser:
-    """Build the supported split-generation command-line interface."""
+    """Build the supported data-preparation command-line interface."""
     parser = argparse.ArgumentParser(
         prog="parkindraw-create-splits",
-        description="Build dataset splits that are safe from subject leakage.",
+        description="Build dataset splits and master manifest safe from subject leakage.",
     )
     parser.add_argument("--raw-dir", default="data/raw")
     parser.add_argument("--output-dir", default="data/splits")
@@ -25,15 +25,16 @@ def build_argument_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
-    """Translate CLI arguments into one split-generation call."""
+    """Translate CLI arguments into one data preparation pipeline call."""
     args = build_argument_parser().parse_args(argv)
-    summary = run_split(
+    result = run_data_preparation_pipeline(
         args.raw_dir,
         args.output_dir,
         holdout_size=args.holdout_size,
         n_splits=args.n_splits,
         seed=args.seed,
     )
+    summary = result.summary
     print(
         f"Split complete: {summary['total_subjects']} subjects "
         f"({summary['development_subjects']} development, "
@@ -42,7 +43,9 @@ def main(argv: list[str] | None = None) -> int:
         f"{summary['sessions']} sessions."
     )
     print(f"Duplicate clusters merged: {len(summary['duplicate_clusters'])}")
-    print(f"Artifacts: {args.output_dir}")
+    print(f"Master manifest: {result.master_manifest_path}")
+    print(f"Sessions: {result.sessions_path}")
+    print(f"Config & Audit: {result.split_config_path}")
     return 0
 
 

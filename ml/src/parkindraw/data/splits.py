@@ -1,31 +1,30 @@
 """Leakage-safe dataset splits for ParkinDraw.
 
-Splitting happens at the subject level rather than the image level, and the
-same assignment is reused for Circle, Meander, and Spiral so that late fusion
-of the three models stays valid.
+Splitting happens at the subject/cluster level rather than the image level, and
+the assignment is unified across Circle, Meander, and Spiral so late fusion
+stays valid.
 
-Two stages:
-
-1. a locked holdout, separated once and never touched during tuning;
-2. Stratified Group K-Fold over the development set, used by Optuna.
-
-The indivisible unit is not the subject but the *cluster*: this dataset ships
-byte-identical images under distinct subject IDs, so subjects linked by a
-duplicate are split together. Clusters are derived from file hashes at runtime
-(see `build_clusters`) rather than hard-coded, and `verify_no_leakage` audits
-the result against those hashes directly.
+Outputs 3 master artifacts:
+1. `master_manifest.csv`: Enriched manifest with hashes, clusters, partitions, and folds.
+2. `sessions.csv`: Triplet evaluation units (1 Circle + 1 Meander + 1 Spiral) for holdout.
+3. `split_config.json`: Configuration and duplicate cluster audit log.
 """
 
-import hashlib
 import json
 from collections.abc import Mapping
 from pathlib import Path
-from types import MappingProxyType
 
 import pandas as pd
 from sklearn.model_selection import StratifiedGroupKFold, train_test_split
 
-from parkindraw.data.dataset import build_manifest
+from parkindraw.data.hashing import (
+    NO_CLUSTERS,
+    Clusters,
+    build_clusters,
+    cluster_ids,
+    hash_images,
+)
+from parkindraw.data.manifest import build_manifest
 
 DEFAULT_SEED = 42
 DEFAULT_HOLDOUT_SIZE = 0.2
@@ -34,60 +33,9 @@ DEFAULT_N_SPLITS = 3
 DRAWING_TYPES = ("circle", "meander", "spiral")
 SESSIONS_PER_SUBJECT = 4
 
-# Maps a subject ID to the ID of the cluster it belongs to.
-Clusters = Mapping[str, str]
-
-# Explicit default: every subject stands alone, no duplicates known.
-NO_CLUSTERS: Clusters = MappingProxyType({})
-
 
 class SplitError(RuntimeError):
     """Raised when a produced split violates a leakage guarantee."""
-
-
-def hash_images(manifest: pd.DataFrame, raw_dir: str | Path) -> pd.Series:
-    """Hash the contents of every image, aligned with the manifest rows."""
-    root = Path(raw_dir)
-    return manifest["filepath"].map(
-        lambda relative: hashlib.sha256((root / relative).read_bytes()).hexdigest()
-    )
-
-
-def build_clusters(manifest: pd.DataFrame, hashes: pd.Series) -> dict[str, str]:
-    """Group subjects that share byte-identical images into one cluster.
-
-    Cross-subject duplicates defeat subject-level splitting: the same file can
-    land in training under one subject ID and in validation under another.
-
-    Returns subject_id -> cluster_id for duplicated subjects only; every other
-    subject is its own cluster, resolved through `cluster_ids`.
-    """
-    parent: dict[str, str] = {}
-
-    def find(subject: str) -> str:
-        parent.setdefault(subject, subject)
-        while parent[subject] != subject:
-            parent[subject] = parent[parent[subject]]
-            subject = parent[subject]
-        return subject
-
-    def union(left: str, right: str) -> None:
-        # The lexicographically smaller root always wins, which keeps cluster
-        # IDs stable across runs regardless of manifest ordering.
-        winner, loser = sorted((find(left), find(right)))
-        parent[loser] = winner
-
-    for _, group in manifest.groupby(hashes.values, sort=False):
-        subjects = sorted(set(group["subject_id"]))
-        for other in subjects[1:]:
-            union(subjects[0], other)
-
-    return {subject: find(subject) for subject in sorted(parent)}
-
-
-def cluster_ids(subjects: pd.Series, clusters: Clusters) -> pd.Series:
-    """Map subject IDs to cluster IDs; an unduplicated subject is its own."""
-    return subjects.map(lambda subject: clusters.get(subject, subject))
 
 
 def subject_table(manifest: pd.DataFrame) -> pd.DataFrame:
@@ -272,21 +220,41 @@ def verify_no_leakage(
         )
 
 
-def write_splits(
-    output_dir: str | Path,
+def build_master_manifest(
+    manifest: pd.DataFrame,
+    hashes: pd.Series,
+    clusters: Clusters,
     holdout: pd.DataFrame,
     folds: list[pd.DataFrame],
+) -> pd.DataFrame:
+    """Consolidate manifest, hashes, clusters, partitions, and fold assignments into one table."""
+    master = manifest.copy()
+    master["image_hash"] = hashes.values
+    master["cluster_id"] = cluster_ids(master["subject_id"], clusters).values
+
+    holdout_map = dict(zip(holdout["subject_id"], holdout["partition"]))
+    master["partition"] = master["subject_id"].map(holdout_map)
+
+    for number, fold in enumerate(folds):
+        fold_map = dict(zip(fold["subject_id"], fold["split"]))
+        master[f"fold_{number}"] = master["subject_id"].map(fold_map)
+
+    return master
+
+
+def write_splits(
+    output_dir: str | Path,
+    master_manifest: pd.DataFrame,
     sessions: pd.DataFrame,
     metadata: dict,
 ) -> None:
-    """Write the split manifests, pinning line endings and key order so an
-    unchanged seed reproduces byte-identical files."""
+    """Write the 3 unified split manifests."""
     out = Path(output_dir)
     out.mkdir(parents=True, exist_ok=True)
 
-    holdout.to_csv(out / "holdout.csv", index=False, lineterminator="\n")
-    for number, fold in enumerate(folds):
-        fold.to_csv(out / f"fold_{number}.csv", index=False, lineterminator="\n")
+    master_manifest.to_csv(
+        out / "master_manifest.csv", index=False, lineterminator="\n"
+    )
     sessions.to_csv(out / "sessions.csv", index=False, lineterminator="\n")
     (out / "split_config.json").write_text(
         json.dumps(metadata, indent=2, sort_keys=True) + "\n",
@@ -326,8 +294,6 @@ def _summarise(
         "holdout_class_counts": class_counts(is_holdout),
         "development_class_counts": class_counts(~is_holdout),
         "sessions": len(sessions),
-        # Recorded so reviewers can see which subjects were merged without
-        # re-hashing the raw archive themselves.
         "duplicate_clusters": _cluster_members(clusters),
         "fold_validation_subjects": [
             int((fold["split"] == "validation").sum()) for fold in folds
@@ -357,6 +323,9 @@ def run_split(
     verify_no_leakage(manifest, hashes, holdout, folds)
     sessions = build_sessions(manifest, locked)
 
+    master_manifest = build_master_manifest(
+        manifest, hashes, clusters, holdout, folds
+    )
     summary = _summarise(manifest, holdout, folds, sessions, clusters, config)
-    write_splits(output_dir, holdout, folds, sessions, summary)
+    write_splits(output_dir, master_manifest, sessions, summary)
     return summary

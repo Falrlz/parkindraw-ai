@@ -34,11 +34,31 @@ def split_result(raw_dir, tmp_path):
     """Run the full split pipeline and return its artifacts."""
     output = tmp_path / "splits"
     summary = run_split(raw_dir, output, n_splits=N_SPLITS)
+    master = pd.read_csv(output / "master_manifest.csv")
+    holdout = (
+        master[["subject_id", "class_name", "label", "partition"]]
+        .drop_duplicates()
+        .sort_values("subject_id", ignore_index=True)
+    )
+    folds = []
+    for i in range(N_SPLITS):
+        fold_col = f"fold_{i}"
+        f = (
+            master.dropna(subset=[fold_col])[
+                ["subject_id", "class_name", "label", fold_col]
+            ]
+            .drop_duplicates()
+            .rename(columns={fold_col: "split"})
+            .sort_values("subject_id", ignore_index=True)
+        )
+        folds.append(f)
+
     return {
         "dir": output,
         "summary": summary,
-        "holdout": pd.read_csv(output / "holdout.csv"),
-        "folds": [pd.read_csv(output / f"fold_{i}.csv") for i in range(N_SPLITS)],
+        "master_manifest": master,
+        "holdout": holdout,
+        "folds": folds,
         "sessions": pd.read_csv(output / "sessions.csv"),
     }
 
@@ -156,7 +176,7 @@ def test_the_same_seed_produces_an_identical_split(raw_dir, tmp_path):
     first, second = tmp_path / "a", tmp_path / "b"
     run_split(raw_dir, first, seed=7)
     run_split(raw_dir, second, seed=7)
-    for name in ("holdout.csv", "fold_0.csv", "sessions.csv"):
+    for name in ("master_manifest.csv", "sessions.csv", "split_config.json"):
         assert (first / name).read_text() == (second / name).read_text()
 
 
@@ -164,7 +184,10 @@ def test_a_different_seed_produces_a_different_split(raw_dir, tmp_path):
     first, second = tmp_path / "a", tmp_path / "b"
     run_split(raw_dir, first, seed=1)
     run_split(raw_dir, second, seed=99)
-    assert (first / "holdout.csv").read_text() != (second / "holdout.csv").read_text()
+    assert (
+        (first / "master_manifest.csv").read_text()
+        != (second / "master_manifest.csv").read_text()
+    )
 
 
 def test_config_records_the_seed_and_sizes(split_result):
@@ -179,10 +202,9 @@ def test_config_records_the_seed_and_sizes(split_result):
 
 def test_all_artifacts_are_written(split_result):
     expected = {
-        "holdout.csv",
+        "master_manifest.csv",
         "sessions.csv",
         "split_config.json",
-        *(f"fold_{i}.csv" for i in range(N_SPLITS)),
     }
     assert {p.name for p in split_result["dir"].iterdir()} == expected
 

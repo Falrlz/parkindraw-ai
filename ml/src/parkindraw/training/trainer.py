@@ -48,9 +48,19 @@ def set_seed(seed: int) -> None:
 def fold_manifests(config: TrainingConfig) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Split the manifest into the train and validation halves of one fold.
 
-    The fold files list development subjects only, so the locked holdout is
+    The fold columns list development subjects only, so the locked holdout is
     excluded by construction -- there is no code path here that could read it.
     """
+    master_path = Path(config.splits_dir) / "master_manifest.csv"
+    if master_path.is_file():
+        master = pd.read_csv(master_path)
+        subset = master[master["drawing_type"] == config.drawing_type]
+        fold_col = f"fold_{config.fold}"
+        return (
+            subset[subset[fold_col] == "train"].reset_index(drop=True),
+            subset[subset[fold_col] == "validation"].reset_index(drop=True),
+        )
+
     manifest = filter_drawing(build_manifest(config.raw_dir), config.drawing_type)
     fold = pd.read_csv(Path(config.splits_dir) / f"fold_{config.fold}.csv")
     assignment = dict(zip(fold["subject_id"], fold["split"]))

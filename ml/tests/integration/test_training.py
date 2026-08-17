@@ -55,8 +55,8 @@ def test_fold_splits_are_disjoint(config):
 
 
 def test_fold_never_includes_holdout_subjects(config, splits_dir):
-    holdout = pd.read_csv(splits_dir / "holdout.csv")
-    locked = set(holdout.loc[holdout.partition == "holdout", "subject_id"])
+    master = pd.read_csv(splits_dir / "master_manifest.csv")
+    locked = set(master.loc[master.partition == "holdout", "subject_id"])
 
     train, validation = fold_manifests(config)
     assert not locked & set(train.subject_id)

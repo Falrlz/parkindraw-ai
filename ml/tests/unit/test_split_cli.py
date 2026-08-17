@@ -1,8 +1,11 @@
-"""Tests for the split CLI and its temporary compatibility exports."""
+"""Tests for the split / data preparation CLI."""
+
+from pathlib import Path
 
 from scripts import create_splits as cli
 
 from parkindraw.data import splits as core_splits
+from parkindraw.pipelines.data_preparation import DataPreparationResult
 
 
 def split_summary():
@@ -55,11 +58,18 @@ def test_parser_accepts_every_supported_override():
 def test_main_runs_split_generation_and_prints_summary(monkeypatch, capsys):
     calls = []
 
-    def fake_run_split(raw_dir, output_dir, **settings):
+    def fake_run_pipeline(raw_dir, output_dir, **settings):
         calls.append((raw_dir, output_dir, settings))
-        return split_summary()
+        out = Path(output_dir)
+        return DataPreparationResult(
+            summary=split_summary(),
+            output_dir=out,
+            master_manifest_path=out / "master_manifest.csv",
+            sessions_path=out / "sessions.csv",
+            split_config_path=out / "split_config.json",
+        )
 
-    monkeypatch.setattr(cli, "run_split", fake_run_split)
+    monkeypatch.setattr(cli, "run_data_preparation_pipeline", fake_run_pipeline)
 
     exit_code = cli.main(
         [
@@ -88,4 +98,4 @@ def test_main_runs_split_generation_and_prints_summary(monkeypatch, capsys):
     assert "10 subjects (8 development, 2 holdout)" in output
     assert "3 folds, 8 sessions" in output
     assert "Duplicate clusters merged: 1" in output
-    assert "Artifacts: custom-splits" in output
+    assert "Master manifest:" in output
