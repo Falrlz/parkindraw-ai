@@ -3,7 +3,7 @@ requires = ["setuptools>=69"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "parkindraw"
+name = "parkindraw-ml"
 version = "0.1.0"
 description = "AI-assisted Parkinson's screening through drawing analysis"
 readme = "README.md"
@@ -23,59 +23,50 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
 ]
 dependencies = [
-  "numpy>=1.24,<3",
-  "pillow>=10,<13",
-  "pydantic>=2,<3",
-  "pyyaml>=6,<7",
-]
-
-[project.optional-dependencies]
-data = [
-  "pandas>=2,<4",
-]
-train = [
+  "matplotlib>=3.8,<4",
   "mlflow>=2.3,<4",
-  "optuna>=3.1,<5",
+  "numpy>=1.24,<3",
+  "pandas>=2,<4",
+  "pillow>=10,<13",
+  "pyyaml>=6,<7",
   "scikit-learn>=1.2,<2",
   "torch>=2,<3",
   "torchvision>=0.15,<1",
 ]
+
+[project.optional-dependencies]
 eda = [
+  "ipykernel>=6,<7",
   "jupyterlab>=4,<5",
-  "matplotlib>=3.8,<4",
   "seaborn>=0.13,<1",
-]
-api = [
-  "fastapi>=0.100,<1",
-  "prometheus-client>=0.17,<1",
-  "python-multipart>=0.0.6,<1",
-  "uvicorn>=0.22,<1",
 ]
 
 [dependency-groups]
 dev = [
-  "httpx>=0.27,<1",
   "pytest>=8,<10",
   "pytest-cov>=5,<8",
   "ruff>=0.12,<1",
 ]
 
 [tool.setuptools.packages.find]
-where = ["src"]
+where = ["."]
+include = ["src*", "pipelines*"]
 
 [tool.pytest.ini_options]
 minversion = "8.0"
 addopts = "-ra -q --import-mode=importlib"
 testpaths = [
   "tests",
-  "../backend/tests",
 ]
 pythonpath = [".", "src"]
 
 [tool.ruff]
 line-length = 88
 target-version = "py310"
-src = ["src", "../backend", "tests"]
+src = [".", "src", "pipelines", "tests"]
 
 [tool.ruff.lint]
 select = ["E4", "E7", "E9", "F", "I", "UP", "BLE"]
+
+[tool.pyright]
+extraPaths = ["src"]

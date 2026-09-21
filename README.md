@@ -1,49 +1,61 @@
 # ParkinDraw AI
 
-ParkinDraw is an end-to-end research project for AI-assisted Parkinson's
-screening through Circle, Meander, and Spiral drawing analysis.
+ParkinDraw is an end-to-end research and clinical screening system for AI-assisted Parkinson's disease detection using drawing movement analysis (Circle, Meander, and Spiral).
 
-> ParkinDraw is a research screening system, not a medical diagnosis or a
-> substitute for professional clinical assessment.
+> **Disclaimer**: ParkinDraw is designed as an AI-assisted screening research tool, not as an autonomous diagnostic device or a substitute for clinical medical evaluation by certified neurologists.
 
-## Monorepo structure
+---
+
+## 1. Monorepo Structure
 
 ```text
 parkindraw-ai/
-├── frontend/   # React + TypeScript application (planned)
-├── backend/    # FastAPI application (planned)
-├── ml/         # Data preparation, experiments, training, and evaluation
-├── infra/      # MLflow, monitoring, and deployment configuration
-├── docs/       # Project-wide documentation
-├── research/   # Literature review and research evidence
-├── .github/    # Continuous-integration workflows
-└── README.md   # Product-level documentation
+├── ml/           # Machine Learning workspace (data prep, CV training, holdout evaluation)
+├── backend/      # FastAPI screening & inference API service (planned)
+├── frontend/     # Interactive clinical screening web interface (planned)
+├── infra/        # Containerization, deployment, and monitoring (planned)
+├── docs/         # Architecture design documents and project guides
+├── research/     # Scientific literature review, dataset references, and notes
+└── README.md     # Monorepo overview and root documentation
 ```
 
-The machine-learning project is self-contained under [`ml/`](ml/README.md).
-Detailed project documentation is centralized under [`docs/`](docs/).
-Literature-review materials are centralized under [`research/`](research/).
-Run Python dependency, test, training, and optimization commands from that
-directory:
+---
+
+## 2. Machine Learning Quickstart
+
+The core machine learning engine is self-contained under the [`ml/`](ml/README.md) directory.
 
 ```bash
 cd ml
-uv sync --extra data --extra train --group dev
-uv run --extra data --extra train --group dev pytest
+
+# 1. Install dependencies with uv
+uv sync
+
+# 2. Run automated test suite
+uv run pytest
+
+# 3. Run the end-to-end ML pipeline (Data Prep -> 3-Fold Training -> Holdout Eval)
+uv run python -m pipelines.full_pipeline
 ```
 
-## Current status
+Detailed ML documentation, pipeline arguments, and dataset placement instructions can be found in [`ml/README.md`](ml/README.md).
 
-| Area | Status |
-|---|---|
-| Data manifest and leakage-safe splits | Implemented |
-| Metadata baseline and frozen ResNet-18 training | Implemented |
-| Optuna workflow | Implemented; full studies pending |
-| Fusion and inference package | Planned |
-| FastAPI backend | Planned |
-| React frontend | Planned |
-| Monitoring and deployment | Planned |
+---
 
-Source code is licensed under the [MIT License](LICENSE). The NewHandPD
-dataset and research articles have separate source terms and are not covered
-by the repository license.
+## 3. Project Roadmap & Status
+
+| Area | Scope | Status |
+|---|---|:---:|
+| **Data Integrity** | Anomaly resolution, SHA-256 duplicate clustering, zero clinical leakage | ✅ Completed |
+| **Model Training** | Frozen ResNet-18 multi-modality classifiers with 3-Fold Cross-Validation | ✅ Completed |
+| **Model Evaluation** | Locked 20% patient holdout test set with clinical confusion matrices | ✅ Completed |
+| **Experiment Tracking**| Centralized MLflow tracking database under `artifacts/tracking/` | ✅ Completed |
+| **Backend API** | High-performance inference server using FastAPI | ⏳ Planned |
+| **Frontend UI** | Responsive clinical drawing and screening web application | ⏳ Planned |
+| **Deployment** | Docker containers and cloud infrastructure | ⏳ Planned |
+
+---
+
+## 4. License
+
+ParkinDraw source code is licensed under the [MIT License](LICENSE). The NewHandPD dataset and third-party research literature retain their original terms and are not redistributed under this license.

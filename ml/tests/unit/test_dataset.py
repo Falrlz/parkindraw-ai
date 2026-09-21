@@ -1,13 +1,9 @@
-"""Tests for the manifest parsing rules."""
+"""Tests for manifest parsing rules without dataset dependency."""
 
 import pytest
 
-from parkindraw.data.dataset import (
-    DrawingDataset,
-    ManifestError,
-    build_manifest,
-    filter_drawing,
-)
+from src.data.anomalies import ManifestError
+from src.data.manifest import build_manifest, filter_drawing
 
 MEANDERS_PER_SUBJECT = 4
 SPIRALS_PER_SUBJECT = 4
@@ -130,19 +126,3 @@ def test_missing_folder_is_rejected(raw_dir):
 def test_missing_raw_dir_is_rejected(tmp_path):
     with pytest.raises(FileNotFoundError, match="Dataset folder not found"):
         build_manifest(tmp_path / "does-not-exist")
-
-
-def test_drawing_dataset_reads_images(raw_dir):
-    manifest = filter_drawing(build_manifest(raw_dir), "spiral")
-    dataset = DrawingDataset(manifest, raw_dir)
-
-    image, label = dataset[0]
-    assert len(dataset) == len(manifest)
-    assert image.mode == "RGB"
-    assert label in (0, 1)
-
-
-def test_drawing_dataset_applies_the_transform(raw_dir):
-    manifest = filter_drawing(build_manifest(raw_dir), "circle")
-    dataset = DrawingDataset(manifest, raw_dir, transform=lambda image: "transformed")
-    assert dataset[0][0] == "transformed"

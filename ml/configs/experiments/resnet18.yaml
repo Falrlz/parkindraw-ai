@@ -1,25 +1,17 @@
-# ResNet-18 baseline experiment configuration for Phase 2 training.
-# Configures single-drawing hyperparameter baselines, hardware, and dataset paths.
+# ResNet-18 model training and optimization hyperparameters.
 
-drawing_type: spiral   # circle | meander | spiral
-fold: 0                # 0..n_splits-1
+# Cross-validation fold configuration ("all" for full 3-fold CV, or specific fold 0..2)
+fold: "all"
 
-# Optimisation
-epochs: 30
+# Optimization hyperparameters
+epochs: 50
 batch_size: 32
 learning_rate: 0.001
 weight_decay: 0.0001
 dropout: 0.0
+
+# Early stopping & learning rate scheduling
 early_stopping_patience: 5
-
-# Reproducibility
-seed: 42
-
-# Hardware. "auto" selects CUDA when present, otherwise CPU, so renting a GPU
-# needs no code change. Raise num_workers on a machine with more cores.
-device: auto
-num_workers: 0
-
-# Data
-raw_dir: data/raw
-splits_dir: data/splits
+reduce_lr_patience: 2
+reduce_lr_factor: 0.5
+min_lr: 0.000001

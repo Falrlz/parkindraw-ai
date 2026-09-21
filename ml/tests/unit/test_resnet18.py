@@ -7,7 +7,7 @@ head may receive gradients.
 import torch
 from torch import nn
 
-from parkindraw.models.resnet18 import (
+from src.models.resnet18 import (
     FEATURE_DIM,
     NUM_CLASSES,
     build_model,

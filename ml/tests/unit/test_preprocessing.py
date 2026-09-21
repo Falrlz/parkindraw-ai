@@ -1,10 +1,12 @@
-"""Tests for the fixed preprocessing and the training augmentation."""
+"""Tests for the fixed preprocessing, training augmentation, and DrawingDataset feeder."""
 
 import torch
+from torch.utils.data import DataLoader
 
-from parkindraw.data.dataset import build_manifest
-from parkindraw.preprocessing.augmentation import build_train_transform
-from parkindraw.preprocessing.transforms import (
+from src.data.manifest import build_manifest
+from src.preprocessing.augmentation import build_train_transform
+from src.preprocessing.data_loader import DrawingDataset
+from src.preprocessing.transforms import (
     IMAGE_SIZE,
     IMAGENET_MEAN,
     IMAGENET_STD,
@@ -112,3 +114,39 @@ def test_evaluation_transform_carries_no_randomness(raw_dir):
     torch.manual_seed(999)
     second = transform(image)
     assert torch.equal(first, second)
+
+
+# --- DrawingDataset Feeder Tests ------------------------------------------
+
+
+def test_drawing_dataset_loads_samples_and_labels(raw_dir):
+    manifest = build_manifest(raw_dir)
+    dataset = DrawingDataset(manifest, raw_dir=raw_dir, transform=build_transform())
+
+    assert len(dataset) == len(manifest)
+    image_tensor, label = dataset[0]
+    assert image_tensor.shape == (3, IMAGE_SIZE, IMAGE_SIZE)
+    assert image_tensor.dtype == torch.float32
+    assert label in (0, 1)
+
+
+def test_drawing_dataset_applies_train_augmentation_on_the_fly(raw_dir):
+    manifest = build_manifest(raw_dir)
+    dataset = DrawingDataset(manifest, raw_dir=raw_dir, transform=build_train_transform())
+
+    torch.manual_seed(42)
+    sample_a, _ = dataset[0]
+    torch.manual_seed(123)
+    sample_b, _ = dataset[0]
+    assert not torch.equal(sample_a, sample_b)
+
+
+def test_drawing_dataset_feeds_batches_to_dataloader(raw_dir):
+    manifest = build_manifest(raw_dir)
+    dataset = DrawingDataset(manifest, raw_dir=raw_dir, transform=build_transform())
+    loader = DataLoader(dataset, batch_size=4, shuffle=False)
+
+    batch_images, batch_labels = next(iter(loader))
+    assert batch_images.shape == (4, 3, IMAGE_SIZE, IMAGE_SIZE)
+    assert batch_labels.shape == (4,)
+    assert batch_images.dtype == torch.float32
