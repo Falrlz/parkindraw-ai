@@ -2,7 +2,7 @@
 
 This sub-project hosts the complete end-to-end Machine Learning pipeline for **ParkinDraw AI**, an AI-assisted clinical screening research system designed to detect Parkinson's disease through handwriting and drawing movement analysis (**Circle**, **Meander**, and **Spiral**).
 
-It implements robust raw data ingestion, automated anomaly resolution, SHA-256 duplicate clustering for zero clinical leakage, fine-tuned **ResNet-18** deep learning architectures, patient-level **Stratified 3-Fold Cross-Validation**, local experiment tracking via **MLflow**, production weight checkpointing, and independent evaluation against a **locked 20% holdout test partition**.
+It implements robust raw data ingestion, automated anomaly resolution, SHA-256 duplicate clustering for zero clinical leakage, clinical affine data augmentation, fine-tuned **ResNet-18** deep learning architectures, patient-level **Stratified 3-Fold Cross-Validation**, local experiment tracking via **MLflow**, production weight checkpointing, and independent evaluation against a **locked 20% holdout test partition**.
 
 > **Clinical Research Disclaimer**: ParkinDraw is designed as an AI-assisted clinical screening research tool. It is not an autonomous diagnostic medical device or a replacement for clinical neurological examination by board-certified physicians.
 
@@ -12,10 +12,11 @@ It implements robust raw data ingestion, automated anomaly resolution, SHA-256 d
 
 ```text
 ml/
-├── artifacts/                # Consolidated pipeline outputs (git-ignored)
+├── assets/                   # Tracked visual assets and publication figures
+│   └── figures/              # Confusion matrices and learning curves (.png)
+├── artifacts/                # Consolidated runtime outputs (git-ignored)
 │   ├── models/               # Model weights: resnet18_{modality}_fold{f}.pt & resnet18_{modality}.pt
-│   ├── reports/              # Clinical evaluation reports and visualizations
-│   │   └── figures/          # Confusion matrices and learning curves (.png)
+│   ├── reports/              # Clinical evaluation reports and runtime figures
 │   └── tracking/             # MLflow SQLite experiment database (mlflow.db)
 ├── configs/
 │   └── experiments/          # Model-centric training hyperparameters
@@ -82,41 +83,77 @@ The machine learning lifecycle is decoupled into clean, modular pipelines:
 
 ```mermaid
 graph TD
-    A[Raw Data: data/raw/] --> B[pipelines.preparation]
-    B -->|Scan, Fix Anomalies, SHA-256 Hashing| C[Cluster-Aware Partitioning]
-    C --> D[Save Single Source of Truth: data/splits/master_manifest.csv]
-    
-    D --> E[Development Set: 477 samples / 53 subjects]
-    D --> F[Locked Holdout Set: 117 samples / 13 subjects]
-    
-    E --> G[pipelines.train: 3-Fold Stratified CV]
-    G --> H[Train Frozen ResNet-18 + Fine-tuned Head]
-    H --> I[Log Epochs, Parameters, Metrics to MLflow SQLite]
-    H --> J[Select Winning Fold Weights: artifacts/models/resnet18_modality.pt]
-    
-    F --> K[pipelines.evaluate: Holdout Benchmark]
-    J --> K
-    K --> L[Generate Reports: Confusion Matrices & Curves in artifacts/reports/figures/]
+    subgraph STAGE_1["Stage 1: Data Preparation & Integrity Guard"]
+        A["Raw Images: data/raw/<br/>(HealthyCircle, PatientSpiral, etc.)"] --> B["Scanning & Anomaly Resolution<br/>(Extract Subject IDs, Fix P08 mea5 index)"]
+        B --> C["SHA-256 Cryptographic Hashing<br/>(Identify Identical Duplicate Files)"]
+        C --> D["Connected Component Clustering<br/>(Build cluster_id: P01, P04, P25...)"]
+        D --> E["Cluster-Stratified Partitioning<br/>(80% Development / 20% Locked Holdout)"]
+        E --> F["Automated Leakage Verification<br/>(assert 0 Subject & 0 Hash Overlap)"]
+        F --> G["Single Source of Truth Manifest<br/>data/splits/master_manifest.csv"]
+    end
+
+    subgraph STAGE_2["Stage 2: Multi-Drawing Training & 3-Fold Cross-Validation"]
+        G -->|Development Set: 477 images| H["Modality Subset Filtering<br/>(Circle: 53, Meander: 212, Spiral: 212)"]
+        H --> I["Stratified 3-Fold CV Generator<br/>(get_cv_folds with Cluster Isolation)"]
+        
+        subgraph DUAL_PREPROCESSING["Dual-Path Preprocessing Engine"]
+            I -->|Training Folds| J1["Training Transform (Online Augmentation):<br/>- Bilinear Resize to 224x224<br/>- Affine Jitter: +/-5 deg rotation, +/-4% shift, scale 0.95-1.05<br/>- Paper-White Fill (255) | No Horizontal/Vertical Flip<br/>- ImageNet Normalization (mean=[0.485,0.456,0.406], std=[0.229,0.224,0.225])"]
+            I -->|Validation Folds| J2["Validation Transform (Deterministic):<br/>- Bilinear Resize to 224x224<br/>- Float32 Tensor Scaling [0, 1]<br/>- ImageNet Channel Normalization"]
+        end
+        
+        J1 --> K["PyTorch DataLoaders (batch_size=32)"]
+        J2 --> K
+        
+        subgraph MODEL_TRAINING["Deep Transfer Learning Architecture"]
+            K --> L1["Frozen ResNet-18 Backbone<br/>(Pre-trained ImageNet, requires_grad=False)"]
+            L1 --> L2["Custom Classification Head<br/>Linear(512, 2) + Optional Dropout"]
+            L2 --> L3["Loss & Optimization Engine<br/>- Loss: CrossEntropyLoss<br/>- Optimizer: AdamW (lr=1e-3, weight_decay=1e-4)<br/>- Scheduler: ReduceLROnPlateau (factor=0.5, patience=2)<br/>- EarlyStopping (patience=5 on Val Loss)"]
+        end
+        
+        L3 --> M["MLflow SQLite Experiment Tracking<br/>(Epoch Losses, Metrics, Parameters, Durations)"]
+        L3 --> N["Per-Fold Model Weights<br/>artifacts/models/resnet18_{modality}_fold{f}.pt"]
+        N --> O["Best-Fold Selection<br/>(Max ROC-AUC / F1, Min Val Loss)"]
+        O --> P["Canonical Production Checkpoints<br/>artifacts/models/resnet18_{modality}.pt"]
+    end
+
+    subgraph STAGE_3["Stage 3: Locked Holdout Evaluation & Clinical Reporting"]
+        G -->|Locked Holdout: 117 images| Q["Holdout DataLoader<br/>(Deterministic 224x224 Normalization)"]
+        P --> R["Holdout Inference Engine<br/>(pipelines.evaluate / evaluator.py)"]
+        Q --> R
+        
+        R --> S["Clinical Metrics Engine<br/>- Accuracy: Overall Correctness<br/>- Precision: Positive Predictive Value<br/>- Recall: Screening Sensitivity (Min False Negatives)<br/>- F1-Score: Harmonic Balance<br/>- ROC-AUC: Discrimination Capability"]
+        
+        R --> T["Clinical Visualization Engine<br/>- Multi-Confusion Matrix (confusion_matrix_all.png)<br/>- Individual Modality Matrices (Circle, Meander, Spiral)<br/>- Convergence Learning Curves (Loss & Accuracy)"]
+        
+        T --> U["Tracked Assets & Publication Figures<br/>assets/figures/"]
+    end
 ```
 
-### 1. Stage 1: Data Preparation (`pipelines.preparation`)
+### 1. Stage 1: Data Preparation & Integrity Guard (`pipelines.preparation`)
 Located in [`pipelines/preparation.py`](pipelines/preparation.py), this pipeline:
-* **Anomaly Resolution**: Corrects dataset-specific labeling irregularities (such as mapping subject `P08`'s `mea5` file to valid drawing index 4).
-* **SHA-256 Clustering**: Identifies identical image hashes and groups duplicate-linked subjects into unified clusters.
-* **Stratified Split**: Partitions clusters into 80% development and 20% holdout sets while preserving class balance.
-* **Automated Verification**: Runs `verify_no_leakage()` to assert zero subject and duplicate overlap before exporting [`data/splits/master_manifest.csv`](data/splits/master_manifest.csv).
+* **Anomaly Resolution**: Parses raw directory structures, standardizes subject ID tokens (`H01`..`H36`, `P01`..`P30`), and corrects dataset-specific naming defects (e.g. subject `P08`'s `mea5` file mapped to valid drawing index 4).
+* **SHA-256 Hashing & Clustering**: Computes cryptographic hashes for all 594 images, groups duplicate-linked subjects into unified clusters (`cluster_id`), and logs cluster compositions.
+* **Cluster-Stratified Split**: Partitions clusters into 80% development and 20% holdout sets while strictly preserving class proportions.
+* **Automated Verification**: Executes `verify_no_leakage()` to assert that zero subjects and zero identical image hashes cross the partition boundary before exporting [`data/splits/master_manifest.csv`](data/splits/master_manifest.csv).
 
-### 2. Stage 2: Multi-Drawing Training (`pipelines.train`)
+### 2. Stage 2: Dual Preprocessing, Augmentation & 3-Fold CV (`pipelines.train`)
 Located in [`pipelines/train.py`](pipelines/train.py) and [`src/training/trainer.py`](src/training/trainer.py):
-* **Neural Architecture**: Employs a pre-trained **ResNet-18** feature backbone frozen at the convolutional stages (`requires_grad = False`). The classification head is replaced with `nn.Sequential(Dropout(p=0.0), Linear(512, 2))`.
-* **Optimization**: Uses `AdamW` optimizer ($\text{lr}=10^{-3}$, $\text{weight\_decay}=10^{-4}$) with `ReduceLROnPlateau` scheduler (factor 0.5, patience 2) and `EarlyStopping` (patience 5) monitoring validation loss.
+* **Conservative Clinical Data Augmentation**: In [`src/preprocessing/augmentation.py`](src/preprocessing/augmentation.py), training images undergo controlled geometric jitter:
+  * Small rotation within $\pm 5.0^\circ$ (`MAX_ROTATION_DEGREES = 5.0`).
+  * Translation within $\pm 4\%$ (`MAX_TRANSLATE_FRACTION = 0.04`).
+  * Scaling between 0.95 and 1.05 (`SCALE_RANGE = (0.95, 1.05)`).
+  * Paper-white background fill (`PAPER_FILL = 255`) to prevent artificial black borders.
+  * **Strict Clinical Invariant**: No horizontal or vertical flipping is performed, preserving stroke progression direction and handedness biomechanics.
+* **Deterministic Preprocessing**: Validation and holdout images are resized to $224 \times 224$ using bilinear interpolation and standardized with ImageNet channel statistics ($\mu=[0.485, 0.456, 0.406], \sigma=[0.229, 0.224, 0.225]$).
+* **Neural Architecture**: Employs a pre-trained **ResNet-18** feature backbone frozen at the convolutional layers (`requires_grad = False`). The classification head is replaced with `nn.Sequential(Dropout(p=0.0), Linear(512, 2))`.
+* **Optimization Setup**: Uses `AdamW` optimizer (`learning_rate = 1e-3`, `weight_decay = 1e-4`), `ReduceLROnPlateau` scheduler (`factor = 0.5`, `patience = 2`, `min_lr = 1e-6`), and `EarlyStopping` (`patience = 5`) monitoring validation loss.
 * **Full 3-Fold Cross-Validation**: Evaluates each modality over all 3 stratified folds, saving per-fold checkpoints (`resnet18_{modality}_fold{0,1,2}.pt`) and copying the highest-performing weights (based on ROC-AUC, F1, and minimum validation loss) to canonical [`artifacts/models/resnet18_{modality}.pt`](artifacts/models/).
 
 ### 3. Stage 3: Locked Holdout Evaluation (`pipelines.evaluate`)
 Located in [`pipelines/evaluate.py`](pipelines/evaluate.py) and [`src/evaluation/evaluator.py`](src/evaluation/evaluator.py):
 * Loads canonical models and evaluates inference on the 117 unobserved holdout samples.
 * Computes clinical evaluation metrics: **Accuracy**, **Precision**, **Recall (Sensitivity)**, **F1-Score**, and **ROC-AUC**.
-* Generates publication-ready confusion matrices and loss/accuracy learning curve plots into [`artifacts/reports/figures/`](artifacts/reports/figures/).
+* Generates publication-ready confusion matrices and loss/accuracy learning curve plots into [`assets/figures/`](assets/figures/).
 
 ---
 
@@ -124,7 +161,24 @@ Located in [`pipelines/evaluate.py`](pipelines/evaluate.py) and [`src/evaluation
 
 All experiment runs, fold metrics, learning histories, and model checkpoints are tracked in the local SQLite database at `artifacts/tracking/mlflow.db`.
 
-### 1. Locked Holdout Test Evaluation Benchmark
+### 1. Clinical Metric Definitions & Rationales
+
+Screening model performance is evaluated using five core statistical and clinical metrics:
+
+1. **Accuracy**: Measures the overall fraction of correct predictions across all classes:
+   $$\text{Accuracy} = \frac{TP + TN}{TP + TN + FP + FN}$$
+2. **Precision (Positive Predictive Value)**: Proportion of positive Parkinson predictions that are truly positive:
+   $$\text{Precision} = \frac{TP}{TP + FP}$$
+3. **Recall / Sensitivity (Screening Criterion)**: Proportion of true Parkinson patients correctly detected by the model:
+   $$\text{Recall} = \frac{TP}{TP + FN}$$
+   *Clinical Rationale*: In clinical screening, maximizing Recall is paramount to minimize false negatives and ensure potential Parkinsonian cases are not overlooked.
+4. **F1-Score**: Harmonic mean of Precision and Recall, providing a balanced assessment under clinical constraints:
+   $$\text{F1} = 2 \times \frac{\text{Precision} \times \text{Recall}}{\text{Precision} + \text{Recall}}$$
+5. **ROC-AUC (Area Under the Receiver Operating Characteristic Curve)**: Measures the model's ability to rank diseased subjects above healthy subjects across all probability thresholds, independent of decision boundary selection.
+
+---
+
+### 2. Locked Holdout Test Evaluation Benchmark
 
 The table below summarizes model performance on the independent, locked test partition (117 samples across 13 subjects):
 
@@ -135,28 +189,35 @@ The table below summarizes model performance on the independent, locked test par
 | **Spiral** | 52 | **88.46%** | 80.00% | **100.00%** | **0.8889** | **0.9911** | `artifacts/models/resnet18_spiral.pt` |
 | **Macro Average** | **117** | **89.74%** | **82.62%** | **98.61%** | **0.8989** | **0.9678** | *Production Checkpoints* |
 
-#### Clinical Interpretation:
-* **Exceptional Screening Sensitivity**: Both Circle and Spiral models achieved **100.00% Recall** on locked holdout data (0 false negatives), and Meander achieved **95.83% Recall**. In a clinical screening setting, maximizing sensitivity is paramount to ensure potential Parkinson's cases are not missed.
-* **Discriminative Power**: ROC-AUC scores exceed **0.93** across all modalities (Spiral reaching **0.9911**), proving strong separation between healthy motor execution and Parkinsonian dysgraphia.
+#### Clinical Analysis:
+* **Near-Perfect Screening Sensitivity**: Both Circle and Spiral models achieved **100.00% Recall** on locked holdout data (0 false negatives), and Meander achieved **95.83% Recall**.
+* **Strong Separability**: ROC-AUC scores exceed **0.93** across all modalities (Spiral reaching **0.9911**), proving strong separation between healthy motor execution and Parkinsonian dysgraphia.
 
 ---
 
-### 2. Clinical Evaluation Figures
+### 3. Clinical Evaluation Figures
 
-The pipeline automatically compiles evaluation figures directly to `artifacts/reports/figures/`:
+The pipeline compiles evaluation figures directly to [`assets/figures/`](assets/figures/):
 
 #### A. Multi-Modality Confusion Matrix
-Comparison across all three drawing types on the locked test set:
-![Multi Confusion Matrix](artifacts/reports/figures/confusion_matrix_all.png)
+Side-by-side comparison across Circle, Meander, and Spiral on the locked test set:
+![Multi Confusion Matrix](assets/figures/confusion_matrix_all.png)
 
-#### B. Learning Curves (Training vs Validation Loss & Accuracy)
-Cross-validation learning dynamics and early stopping convergence:
+#### B. Individual Modality Confusion Matrices
+Detailed True vs. Predicted breakdowns showing count and class-normalized percentages:
+
+| Circle Modality | Meander Modality | Spiral Modality |
+| :---: | :---: | :---: |
+| ![Circle CM](assets/figures/confusion_matrix_circle.png) | ![Meander CM](assets/figures/confusion_matrix_meander.png) | ![Spiral CM](assets/figures/confusion_matrix_spiral.png) |
+
+#### C. Training & Validation Learning Curves
+Epoch-by-epoch loss convergence and validation accuracy trajectories:
 * **Spiral Trajectory Learning**:
-  ![Spiral Learning Curve](artifacts/reports/figures/loss_acc_spiral.png)
+  ![Spiral Learning Curve](assets/figures/loss_acc_spiral.png)
 * **Meander Continuous Stroke Learning**:
-  ![Meander Learning Curve](artifacts/reports/figures/loss_acc_meander.png)
+  ![Meander Learning Curve](assets/figures/loss_acc_meander.png)
 * **Circle Tremor Stability Learning**:
-  ![Circle Learning Curve](artifacts/reports/figures/loss_acc_circle.png)
+  ![Circle Learning Curve](assets/figures/loss_acc_circle.png)
 
 ---
 
