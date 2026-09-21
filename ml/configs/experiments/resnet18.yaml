@@ -1,0 +1,17 @@
+# ResNet-18 model training and optimization hyperparameters.
+
+# Cross-validation fold configuration ("all" for full 3-fold CV, or specific fold 0..2)
+fold: "all"
+
+# Optimization hyperparameters
+epochs: 50
+batch_size: 32
+learning_rate: 0.001
+weight_decay: 0.0001
+dropout: 0.0
+
+# Early stopping & learning rate scheduling
+early_stopping_patience: 5
+reduce_lr_patience: 2
+reduce_lr_factor: 0.5
+min_lr: 0.000001

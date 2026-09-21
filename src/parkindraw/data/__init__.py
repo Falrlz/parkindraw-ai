@@ -1,3 +1,0 @@
-"""
-ParkinDraw data module.
-"""

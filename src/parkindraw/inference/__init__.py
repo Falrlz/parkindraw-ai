@@ -1,3 +1,0 @@
-"""
-ParkinDraw inference module.
-"""

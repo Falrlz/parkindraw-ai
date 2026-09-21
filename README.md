@@ -1,133 +1,61 @@
 # ParkinDraw AI
 
-AI-assisted Parkinson's screening through Circle, Meander, and Spiral drawing
-analysis.
+ParkinDraw is an end-to-end research and clinical screening system for AI-assisted Parkinson's disease detection using drawing movement analysis (Circle, Meander, and Spiral).
 
-> ParkinDraw is a research screening system, not a medical diagnosis or a
-> substitute for professional clinical assessment.
+> **Disclaimer**: ParkinDraw is designed as an AI-assisted screening research tool, not as an autonomous diagnostic device or a substitute for clinical medical evaluation by certified neurologists.
 
-## Project scope
+---
 
-ParkinDraw will train one ImageNet-pretrained ResNet-18 model per drawing type.
-The backbone remains frozen, only the classification head is trained, and
-Optuna is used for the bounded hyperparameter search. Application output is
-the simple average of Circle, Meander, and Spiral probabilities.
-
-Current phase:
-
-| Phase | Scope | Status |
-|---|---|---|
-| 0 | Repository foundation | Implemented |
-| 1 | Data governance and reproducible audit | Implemented; validated by quality gates |
-| 2 | Leakage-safe dataset splits | Not started |
-| 3+ | Training, evaluation, API, and application | Not started |
-
-The detailed roadmap, data card, and learning guide are maintained locally
-under `docs/`. This directory is intentionally excluded from Git.
-
-## Repository structure
+## 1. Monorepo Structure
 
 ```text
 parkindraw-ai/
-├── configs/              # Versioned data and experiment configuration
-├── data/
-│   ├── raw/              # Local immutable dataset; ignored by Git
-│   └── metadata/         # Reproducible audit manifests
-├── docs/                 # Local project documentation; ignored by Git
-├── notebooks/            # Exploration only; no production logic
-├── research/             # Literature-review evidence
-├── scripts/              # Thin operational helpers
-├── src/parkindraw/       # Reusable Python package
-└── tests/                # Unit, integration, and artifact-contract tests
+├── ml/           # Machine Learning workspace (data prep, CV training, holdout evaluation)
+├── backend/      # FastAPI screening & inference API service (planned)
+├── frontend/     # Interactive clinical screening web interface (planned)
+├── infra/        # Containerization, deployment, and monitoring (planned)
+├── docs/         # Architecture design documents and project guides
+├── research/     # Scientific literature review, dataset references, and notes
+└── README.md     # Monorepo overview and root documentation
 ```
 
-Backend, frontend, infrastructure, and training implementation are added only
-when their roadmap phase begins.
+---
 
-## Development setup
+## 2. Machine Learning Quickstart
 
-Prerequisites:
-
-- Python 3.10–3.12;
-- [uv](https://docs.astral.sh/uv/).
-
-Install the package, Phase 1 data dependencies, and development tools:
+The core machine learning engine is self-contained under the [`ml/`](ml/README.md) directory.
 
 ```bash
-uv sync --extra data --group dev
+cd ml
+
+# 1. Install dependencies with uv
+uv sync
+
+# 2. Run automated test suite
+uv run pytest
+
+# 3. Run the end-to-end ML pipeline (Data Prep -> 3-Fold Training -> Holdout Eval)
+uv run python -m pipelines.full_pipeline
 ```
 
-Training dependencies are intentionally separate because PyTorch, Optuna, and
-MLflow are not required to run the data audit:
+Detailed ML documentation, pipeline arguments, and dataset placement instructions can be found in [`ml/README.md`](ml/README.md).
 
-```bash
-uv sync --extra data --extra train --group dev
-```
+---
 
-EDA dependencies are also optional:
+## 3. Project Roadmap & Status
 
-```bash
-uv sync --extra data --extra eda --group dev
-```
+| Area | Scope | Status |
+|---|---|:---:|
+| **Data Integrity** | Anomaly resolution, SHA-256 duplicate clustering, zero clinical leakage | ✅ Completed |
+| **Model Training** | Frozen ResNet-18 multi-modality classifiers with 3-Fold Cross-Validation | ✅ Completed |
+| **Model Evaluation** | Locked 20% patient holdout test set with clinical confusion matrices | ✅ Completed |
+| **Experiment Tracking**| Centralized MLflow tracking database under `artifacts/tracking/` | ✅ Completed |
+| **Backend API** | High-performance inference server using FastAPI | ⏳ Planned |
+| **Frontend UI** | Responsive clinical drawing and screening web application | ⏳ Planned |
+| **Deployment** | Docker containers and cloud infrastructure | ⏳ Planned |
 
-## Dataset placement and governance
+---
 
-Place the downloaded NewHandPD folders without renaming or modifying their
-contents:
+## 4. License
 
-```text
-data/raw/
-├── HealthyCircle/
-├── HealthyMeander/
-├── HealthySpiral/
-├── PatientCircle/
-├── PatientMeander/
-└── PatientSpiral/
-```
-
-The raw dataset is not covered by this repository's MIT license and must not be
-committed or redistributed. Provenance, citation, and the unresolved source
-license status are documented in the local `docs/DATA_CARD.md`.
-
-## Data audit
-
-Run the configuration-driven audit:
-
-```bash
-uv run --extra data parkindraw-audit --config configs/data/audit.yaml
-```
-
-Equivalent module command:
-
-```bash
-uv run --extra data python -m parkindraw.data.audit \
-  --config configs/data/audit.yaml
-```
-
-The audit:
-
-- fully decodes every supported image;
-- parses class, subject, drawing type, and logical index;
-- preserves raw filename tokens and records anomalies;
-- computes SHA-256 and perceptual dHash;
-- reports exact duplicates and near-duplicate candidates;
-- validates expected image and subject counts;
-- atomically publishes deterministic metadata artifacts.
-
-The command is successful only when `data/metadata/audit_report.json` contains
-`"status": "passed"`.
-
-## Quality gates
-
-```bash
-uv run --extra data --group dev pytest
-uv run --extra data --group dev ruff check src tests scripts notebooks
-uv lock --check
-git status --short
-```
-
-## License
-
-ParkinDraw source code is licensed under the MIT License. See
-[LICENSE](LICENSE). NewHandPD has separate, not-yet-explicitly-documented
-source terms; see the Data Card before using or redistributing it.
+ParkinDraw source code is licensed under the [MIT License](LICENSE). The NewHandPD dataset and third-party research literature retain their original terms and are not redistributed under this license.
