@@ -87,7 +87,9 @@ class SessionPredictionResponse(BaseModel):
         ...,
         ge=0.0,
         le=1.0,
-        description="Arithmetic mean of Parkinson probabilities across all 3 modalities",
+        description=(
+            "Arithmetic mean of Parkinson probabilities across all 3 modalities"
+        ),
     )
     threshold: float = Field(
         ..., description="Decision threshold applied for positive screening"

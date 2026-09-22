@@ -16,7 +16,10 @@ settings = get_settings()
     "/health",
     response_model=HealthResponse,
     summary="Check service health and model readiness",
-    description="Returns overall backend health status, active compute device, and in-memory model readiness.",
+    description=(
+        "Returns overall backend health status, active compute device, "
+        "and in-memory model readiness."
+    ),
 )
 def get_health() -> HealthResponse:
     """Retrieve service health and model availability status."""

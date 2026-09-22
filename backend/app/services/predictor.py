@@ -28,10 +28,12 @@ def predict_drawing(
     Args:
         modality: Drawing modality to evaluate ('circle', 'meander', 'spiral').
         image_tensor: Normalized 4D batch tensor of shape [1, 3, 224, 224].
-        threshold: Decision threshold for positive Parkinson class (default from settings).
+        threshold: Decision threshold for positive Parkinson class
+            (default from settings).
 
     Returns:
-        DrawingPrediction: Structured prediction result containing probabilities and labels.
+        DrawingPrediction: Structured prediction result containing
+            probabilities and labels.
 
     Raises:
         ModelNotReadyError: If the requested modality model is not loaded in memory.
@@ -39,7 +41,8 @@ def predict_drawing(
     model = model_registry.get_model(modality.value)
     if model is None:
         raise ModelNotReadyError(
-            f"Model for modality '{modality.value}' is not loaded or ready for inference."
+            f"Model for modality '{modality.value}' is not loaded or ready "
+            f"for inference."
         )
 
     decision_threshold = (

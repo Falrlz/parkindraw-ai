@@ -5,7 +5,6 @@ from typing import AsyncGenerator, Dict
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 
 from app.api.v1.api import api_router
 from app.api.v1.endpoints.health import get_health

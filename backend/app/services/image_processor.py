@@ -53,9 +53,10 @@ def validate_image_metadata(filename: str, file_size: int) -> None:
     """
     extension = Path(filename).suffix.lower()
     if extension not in settings.ALLOWED_IMAGE_EXTENSIONS:
+        formats = ", ".join(sorted(settings.ALLOWED_IMAGE_EXTENSIONS))
         raise ImageProcessingError(
             f"File extension '{extension}' is not permitted. "
-            f"Supported formats: {', '.join(sorted(settings.ALLOWED_IMAGE_EXTENSIONS))}."
+            f"Supported formats: {formats}."
         )
 
     if file_size <= 0:
@@ -65,7 +66,8 @@ def validate_image_metadata(filename: str, file_size: int) -> None:
         max_mb = settings.MAX_UPLOAD_SIZE_BYTES / (1024 * 1024)
         actual_mb = file_size / (1024 * 1024)
         raise ImageProcessingError(
-            f"Image file size ({actual_mb:.2f} MB) exceeds maximum allowed limit ({max_mb:.1f} MB)."
+            f"Image file size ({actual_mb:.2f} MB) exceeds maximum allowed "
+            f"limit ({max_mb:.1f} MB)."
         )
 
 

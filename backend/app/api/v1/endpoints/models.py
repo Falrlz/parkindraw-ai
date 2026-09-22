@@ -16,10 +16,13 @@ router = APIRouter()
     "/models/info",
     response_model=ModelsInfoResponse,
     summary="Get model metadata and holdout benchmark results",
-    description="Returns detailed architectural metadata, parameter counts, and clinical benchmark evaluation metrics.",
+    description=(
+        "Returns detailed architectural metadata, parameter counts, "
+        "and clinical benchmark evaluation metrics."
+    ),
 )
 def get_models_info() -> ModelsInfoResponse:
-    """Retrieve operational specifications and clinical benchmark metrics for all models."""
+    """Retrieve operational specs and clinical benchmark metrics for all models."""
     benchmarks = {
         "circle": ModalityBenchmark(
             accuracy=0.9231,

@@ -24,8 +24,14 @@ logger = get_logger("predict_endpoint")
     "/predict/single",
     response_model=SinglePredictionResponse,
     responses={
-        400: {"model": ErrorResponse, "description": "Invalid image format or corrupted file"},
-        503: {"model": ErrorResponse, "description": "Modality model not loaded into memory"},
+        400: {
+            "model": ErrorResponse,
+            "description": "Invalid image format or corrupted file",
+        },
+        503: {
+            "model": ErrorResponse,
+            "description": "Modality model not loaded into memory",
+        },
     },
     summary="Predict Parkinson's probability for a single drawing",
     description=(
@@ -77,18 +83,26 @@ async def predict_single_drawing(
     "/predict/session",
     response_model=SessionPredictionResponse,
     responses={
-        400: {"model": ErrorResponse, "description": "One or more uploaded images are invalid"},
-        503: {"model": ErrorResponse, "description": "One or more models are not ready"},
+        400: {
+            "model": ErrorResponse,
+            "description": "One or more uploaded images are invalid",
+        },
+        503: {
+            "model": ErrorResponse,
+            "description": "One or more models are not ready",
+        },
     },
     summary="Execute full multi-modal screening session (Circle + Meander + Spiral)",
     description=(
-        "Uploads all three required clinical drawing modalities simultaneously and computes "
-        "an aggregate screening outcome via Simple Average Late Fusion."
+        "Uploads all three required clinical drawing modalities simultaneously "
+        "and computes an aggregate screening outcome via Simple Average Late Fusion."
     ),
 )
 async def predict_screening_session(
     circle_file: UploadFile = File(..., description="Circle drawing test image"),
-    meander_file: UploadFile = File(..., description="Meander continuous wave drawing image"),
+    meander_file: UploadFile = File(
+        ..., description="Meander continuous wave drawing image"
+    ),
     spiral_file: UploadFile = File(..., description="Archimedean spiral drawing image"),
     threshold: Optional[float] = Form(
         default=None,

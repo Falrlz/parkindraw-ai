@@ -26,9 +26,13 @@ def test_predict_single_circle(client: TestClient, synthetic_png_image: bytes) -
     assert 0.0 <= pred["probabilities"]["Parkinson"] <= 1.0
 
 
-def test_predict_single_meander(client: TestClient, synthetic_jpeg_image: bytes) -> None:
+def test_predict_single_meander(
+    client: TestClient, synthetic_jpeg_image: bytes
+) -> None:
     """Test single prediction on Meander drawing image with JPEG format."""
-    files = {"file": ("meander_test.jpg", io.BytesIO(synthetic_jpeg_image), "image/jpeg")}
+    files = {
+        "file": ("meander_test.jpg", io.BytesIO(synthetic_jpeg_image), "image/jpeg")
+    }
     data = {"modality": "meander"}
 
     response = client.post("/api/v1/predict/single", files=files, data=data)

@@ -74,7 +74,8 @@ def aggregate_screening_session(
     }
 
     logger.info(
-        f"Aggregated screening session [{assigned_id}]: outcome={fusion_prediction.value}, "
+        f"Aggregated screening session [{assigned_id}]: "
+        f"outcome={fusion_prediction.value}, "
         f"fusion_prob={fusion_prob:.4f} (threshold={decision_threshold})"
     )
 

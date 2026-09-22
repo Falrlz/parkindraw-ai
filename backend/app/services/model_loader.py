@@ -9,7 +9,7 @@ from typing import Dict, Optional
 
 import torch
 import torch.nn as nn
-from torchvision.models import resnet18
+from torchvision.models import ResNet18_Weights, resnet18
 
 from app.core.logging import get_logger
 
@@ -23,15 +23,23 @@ class FrozenResNet18(nn.Module):
     trainable linear classification head matching the trained ML artifacts.
     """
 
-    def __init__(self, num_classes: int = 2, dropout_rate: float = 0.0) -> None:
+    def __init__(
+        self,
+        num_classes: int = 2,
+        dropout_rate: float = 0.0,
+        pretrained: bool = True,
+    ) -> None:
         """Initialize FrozenResNet18 architecture.
 
         Args:
             num_classes: Number of categorical output logits (default: 2).
             dropout_rate: Dropout probability in the classification head (default: 0.0).
+            pretrained: Whether to load ImageNet-pretrained convolutional
+                backbone weights.
         """
         super().__init__()
-        backbone = resnet18(weights=None)
+        weights = ResNet18_Weights.DEFAULT if pretrained else None
+        backbone = resnet18(weights=weights)
         backbone.fc = nn.Identity()
 
         self.backbone = backbone
@@ -121,7 +129,9 @@ class ModelRegistry:
 
         for modality in modalities:
             checkpoint_path = models_dir / f"resnet18_{modality}.pt"
-            success = self.load_model(modality=modality, checkpoint_path=checkpoint_path)
+            success = self.load_model(
+                modality=modality, checkpoint_path=checkpoint_path
+            )
             results[modality] = success
 
         loaded_count = sum(results.values())
@@ -167,16 +177,30 @@ class ModelRegistry:
                     f"Unrecognized checkpoint format for {modality}: {type(checkpoint)}"
                 )
 
-            model.load_state_dict(state_dict)
+            # Handle head-only state_dict (saved via save_head in ml pipeline)
+            # or full model state_dict
+            if set(state_dict.keys()) == {"weight", "bias"}:
+                model.head.load_state_dict(state_dict)
+            elif any(k.startswith("head.") for k in state_dict.keys()) and not any(
+                k.startswith("backbone.") for k in state_dict.keys()
+            ):
+                head_dict = {k.replace("head.", ""): v for k, v in state_dict.items()}
+                model.head.load_state_dict(head_dict)
+            else:
+                model.load_state_dict(state_dict)
+
             model.to(self._device)
             model.eval()
 
             self._models[modality] = model
-            logger.info(f"Successfully loaded '{modality}' model checkpoint into memory.")
+            logger.info(
+                f"Successfully loaded '{modality}' model checkpoint into memory."
+            )
             return True
         except Exception as err:
             logger.error(
-                f"Failed to load checkpoint for '{modality}' from {checkpoint_path}: {err}",
+                f"Failed to load checkpoint for '{modality}' from "
+                f"{checkpoint_path}: {err}",
                 exc_info=True,
             )
             return False
