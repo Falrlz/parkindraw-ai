@@ -57,6 +57,7 @@ research/articles/*.pdf
 
 # Local Project Documentation
 docs/
+frontend/docs/
 
 # Jupyter Notebook Checkpoints
 .ipynb_checkpoints/
@@ -65,6 +66,7 @@ docs/
 frontend/node_modules/
 frontend/dist/
 frontend/build/
+*.log
 
 # IDE & System Files
 .vscode/
