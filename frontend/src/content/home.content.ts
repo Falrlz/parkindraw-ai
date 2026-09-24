@@ -2,16 +2,15 @@ import type { HomeContent } from './types';
 
 export const homeContent: HomeContent = {
   hero: {
-    badge: 'AI-Assisted Neuromotor Screening System',
-    title: 'ParkinDraw',
+    title: 'PARKINDRAW',
     tagline: 'Draw. Analyze. Screen.',
-    lead: 'Setiap goresan pena menyimpan informasi neuromuskular yang berharga. Penyakit Parkinson sering kali diawali dengan degradasi mikromotorik halus—seperti tremor tersembunyi, fluktuasi tekanan, dan osilasi spasial yang sulit terlihat oleh mata telanjang. ParkinDraw memanfaatkan jaringan konvolusional mutakhir untuk menerjemahkan pola goresan sederhana menjadi indikator penapisan risiko yang presisi, objektif, dan dapat diakses siapa saja.',
-    primaryCta: 'Mulai Skrining Sekarang',
-    secondaryCta: 'Pelajari Metodologi',
+  },
+  explanation: {
+    text:
+      'Setiap goresan pena menyimpan informasi neuromuskular yang berharga. Penyakit Parkinson sering kali diawali dengan degradasi mikromotorik halus—seperti tremor tersembunyi, fluktuasi tekanan, dan osilasi spasial yang sulit terlihat oleh mata telanjang. ParkinDraw memanfaatkan jaringan konvolusional mutakhir untuk menerjemahkan pola goresan sederhana menjadi indikator penapisan risiko yang presisi, objektif, dan dapat diakses siapa saja.',
   },
   workflow: {
     heading: 'Dari Menggambar Menciptakan Pola',
-    subtitle: 'Proses penapisan terstandarisasi yang dirancang mudah, cepat, dan terukur.',
     steps: [
       {
         number: '01',
@@ -35,7 +34,6 @@ export const homeContent: HomeContent = {
   },
   biomarkers: {
     heading: 'Tiga Pola. Punya Cerita.',
-    subtitle: 'Dasar fisiologis dan biomekanik di balik pemilihan tiga modalitas uji gambar.',
     items: [
       {
         id: 'circle',
@@ -62,7 +60,6 @@ export const homeContent: HomeContent = {
   },
   faqPreview: {
     heading: 'Pertanyaan yang Sering Diajukan',
-    subtitle: 'Pahami hakikat penapisan, batasan teknologi, dan keamanan data Anda.',
     seeAllCta: 'Lihat Seluruh Tanya Jawab & Privasi →',
   },
   ctaBanner: {

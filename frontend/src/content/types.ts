@@ -37,26 +37,22 @@ export interface HomeBiomarker {
 
 export interface HomeContent {
   hero: {
-    badge: string;
     title: string;
     tagline: string;
-    lead: string;
-    primaryCta: string;
-    secondaryCta: string;
+  };
+  explanation: {
+    text: string;
   };
   workflow: {
     heading: string;
-    subtitle: string;
     steps: HomeWorkflowStep[];
   };
   biomarkers: {
     heading: string;
-    subtitle: string;
     items: HomeBiomarker[];
   };
   faqPreview: {
     heading: string;
-    subtitle: string;
     seeAllCta: string;
   };
   ctaBanner: {

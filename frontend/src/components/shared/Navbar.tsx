@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Brain, Menu, X } from 'lucide-react';
 import { useRoute } from '../../app/AppRouter';
 import { navigationContent } from '../../content/navigation.content';
-import { NetworkStatusBadge } from './NetworkStatusBadge';
 
 export const Navbar: React.FC = () => {
   const { currentRoute, navigate } = useRoute();
@@ -28,9 +27,6 @@ export const Navbar: React.FC = () => {
             <span className="font-bold text-base text-slate-900 tracking-tight group-hover:text-teal-800 transition-colors">
               {brand.title}
             </span>
-            <span className="hidden sm:inline-block ml-2 text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
-              {brand.tagline}
-            </span>
           </div>
         </button>
 
@@ -38,33 +34,13 @@ export const Navbar: React.FC = () => {
         <nav className="hidden md:flex items-center gap-1" aria-label="Navigasi Utama">
           {menuItems.map((item) => {
             const isActive = currentRoute === item.path;
-            if (item.isAction) {
-              return (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => navigate(item.path)}
-                  className={`ml-2 px-3.5 py-1.5 rounded-lg text-sm font-semibold transition-colors cursor-pointer ${
-                    isActive
-                      ? 'bg-teal-800 text-white'
-                      : 'bg-teal-700 text-white hover:bg-teal-800'
-                  }`}
-                >
-                  {item.label}
-                </button>
-              );
-            }
             return (
               <button
                 key={item.id}
                 type="button"
                 aria-current={isActive ? 'page' : undefined}
                 onClick={() => navigate(item.path)}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors cursor-pointer ${
-                  isActive
-                    ? 'text-teal-800 font-semibold bg-teal-50/60'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-                }`}
+                className="px-3 py-1.5 rounded-md text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
               >
                 {item.label}
               </button>
@@ -72,16 +48,14 @@ export const Navbar: React.FC = () => {
           })}
         </nav>
 
-        {/* Status Indicator & Mobile Toggle */}
-        <div className="flex items-center gap-3">
-          <NetworkStatusBadge />
-
+        {/* Mobile Toggle */}
+        <div className="md:hidden flex items-center">
           <button
             type="button"
             aria-expanded={mobileMenuOpen}
             aria-label="Buka menu navigasi"
             onClick={() => setMobileMenuOpen((prev) => !prev)}
-            className="md:hidden p-1.5 text-slate-600 hover:text-slate-900 rounded-md hover:bg-slate-100 cursor-pointer"
+            className="p-1.5 text-slate-600 hover:text-slate-900 rounded-md hover:bg-slate-100 cursor-pointer"
           >
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
@@ -105,11 +79,7 @@ export const Navbar: React.FC = () => {
                   navigate(item.path);
                   setMobileMenuOpen(false);
                 }}
-                className={`text-left px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer ${
-                  isActive
-                    ? 'bg-teal-50 text-teal-900 font-semibold'
-                    : 'text-slate-700 hover:bg-slate-50'
-                } ${item.isAction ? 'font-bold text-teal-800 bg-teal-50/80' : ''}`}
+                className="text-left px-3 py-2 rounded-md text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors cursor-pointer"
               >
                 {item.label}
               </button>

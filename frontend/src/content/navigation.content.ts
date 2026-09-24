@@ -2,7 +2,7 @@ import type { NavigationContent } from './types';
 
 export const navigationContent: NavigationContent = {
   brand: {
-    title: 'ParkinDraw AI',
+    title: 'Parkindraw',
     tagline: 'Clinical Screening',
   },
   menuItems: [
@@ -15,17 +15,11 @@ export const navigationContent: NavigationContent = {
       id: 'screening',
       label: 'Skrining',
       path: '/screening',
-      isAction: true,
     },
     {
       id: 'about',
       label: 'Tentang',
       path: '/about',
-    },
-    {
-      id: 'faq',
-      label: 'FAQ',
-      path: '/faq',
     },
   ],
   footer: {

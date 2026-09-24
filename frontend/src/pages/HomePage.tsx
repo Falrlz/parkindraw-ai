@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowRight, BookOpen, Activity, CheckCircle2, ChevronRight } from 'lucide-react';
+import { ArrowRight, Activity, CheckCircle2, ChevronRight } from 'lucide-react';
 import { useRoute } from '../app/AppRouter';
 import { homeContent } from '../content/home.content';
 import { faqContent } from '../content/faq.content';
@@ -10,7 +10,7 @@ import { FaqItem } from '../features/faq/components/FaqItem';
 
 export const HomePage: React.FC = () => {
   const { navigate } = useRoute();
-  const { hero, workflow, biomarkers, faqPreview, ctaBanner } = homeContent;
+  const { hero, explanation, workflow, biomarkers, faqPreview, ctaBanner } = homeContent;
 
   // Take top 3 FAQ questions for preview
   const previewFaqs = faqContent.categories.flatMap((cat) => cat.items).slice(0, 3);
@@ -18,58 +18,37 @@ export const HomePage: React.FC = () => {
   return (
     <div>
       {/* 1. Hero Section */}
-      <SectionContainer className="pt-12 sm:pt-16 pb-12 text-center">
-        <div className="max-w-3xl mx-auto">
-          <p className="text-xs font-bold uppercase tracking-wider text-teal-800 bg-teal-50 border border-teal-200 inline-block px-3 py-1 rounded-full mb-4">
-            {hero.badge}
-          </p>
-
-          <h1 className="text-4xl sm:text-5xl font-black text-slate-900 tracking-tight leading-tight">
-            {hero.title}
-            <span className="block text-xl sm:text-2xl font-bold text-teal-700 mt-2 font-mono">
+      <section className="py-20 sm:py-28 text-center bg-white border-b border-slate-200">
+        <SectionContainer>
+          <div className="max-w-3xl mx-auto">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-slate-900 tracking-tight leading-tight">
+              {hero.title}
+            </h1>
+            <p className="mt-3 text-xl sm:text-2xl md:text-3xl font-bold text-teal-700 font-mono tracking-tight">
               {hero.tagline}
-            </span>
-          </h1>
-
-          <p className="mt-5 text-base sm:text-lg text-slate-600 leading-relaxed max-w-2xl mx-auto">
-            {hero.lead}
-          </p>
-
-          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Button
-              type="button"
-              size="lg"
-              onClick={() => navigate('/screening')}
-              rightIcon={<ArrowRight className="w-5 h-5" />}
-              className="w-full sm:w-auto"
-            >
-              {hero.primaryCta}
-            </Button>
-
-            <Button
-              type="button"
-              size="lg"
-              variant="outline"
-              onClick={() => navigate('/about')}
-              leftIcon={<BookOpen className="w-4 h-4" />}
-              className="w-full sm:w-auto"
-            >
-              {hero.secondaryCta}
-            </Button>
+            </p>
           </div>
-        </div>
-      </SectionContainer>
+        </SectionContainer>
+      </section>
 
-      {/* 2. Workflow Section (01. Gambar -> 02. Analisis -> 03. Hasil) */}
-      <div className="bg-slate-100/60 border-y border-slate-200">
+      {/* 2. Penjelasan ParkinDraw */}
+      <section className="py-16 sm:py-20 bg-slate-50 border-b border-slate-200">
+        <SectionContainer>
+          <div className="max-w-3xl mx-auto text-center">
+            <p className="text-base sm:text-lg md:text-xl text-slate-700 leading-relaxed font-normal">
+              {explanation.text}
+            </p>
+          </div>
+        </SectionContainer>
+      </section>
+
+      {/* 3. Workflow Section (01. Gambar -> 02. Analisis -> 03. Hasil) */}
+      <div className="bg-slate-100/60 border-b border-slate-200">
         <SectionContainer>
           <header className="text-center max-w-2xl mx-auto mb-10">
             <h2 className="text-2xl sm:text-3xl font-bold text-slate-900">
               {workflow.heading}
             </h2>
-            <p className="mt-2 text-sm sm:text-base text-slate-600">
-              {workflow.subtitle}
-            </p>
           </header>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -90,15 +69,12 @@ export const HomePage: React.FC = () => {
         </SectionContainer>
       </div>
 
-      {/* 3. Biomarkers Section (Tiga Pola. Punya Cerita.) */}
+      {/* 4. Biomarkers Section (Tiga Pola. Punya Cerita.) */}
       <SectionContainer>
         <header className="text-center max-w-2xl mx-auto mb-10">
           <h2 className="text-2xl sm:text-3xl font-bold text-slate-900">
             {biomarkers.heading}
           </h2>
-          <p className="mt-2 text-sm sm:text-base text-slate-600">
-            {biomarkers.subtitle}
-          </p>
         </header>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -121,16 +97,13 @@ export const HomePage: React.FC = () => {
         </div>
       </SectionContainer>
 
-      {/* 4. FAQ Preview Section */}
+      {/* 5. FAQ Preview Section */}
       <div className="bg-slate-100/50 border-t border-slate-200">
         <SectionContainer>
           <header className="text-center max-w-2xl mx-auto mb-8">
             <h2 className="text-2xl sm:text-3xl font-bold text-slate-900">
               {faqPreview.heading}
             </h2>
-            <p className="mt-2 text-sm sm:text-base text-slate-600">
-              {faqPreview.subtitle}
-            </p>
           </header>
 
           <div className="max-w-2xl mx-auto space-y-3 mb-6">
@@ -152,7 +125,7 @@ export const HomePage: React.FC = () => {
         </SectionContainer>
       </div>
 
-      {/* 5. CTA Banner Section */}
+      {/* 6. CTA Banner Section */}
       <div className="border-t border-slate-200 bg-white">
         <SectionContainer className="text-center py-12 sm:py-16">
           <div className="max-w-2xl mx-auto">
