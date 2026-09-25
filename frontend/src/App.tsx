@@ -4,7 +4,6 @@ import { RootLayout } from './app/layouts/RootLayout';
 import { HomePage } from './pages/HomePage';
 import { ScreeningPage } from './pages/ScreeningPage';
 import { AboutPage } from './pages/AboutPage';
-import { FaqPage } from './pages/FaqPage';
 
 const AppContent: React.FC = () => {
   const { currentRoute } = useRoute();
@@ -15,8 +14,6 @@ const AppContent: React.FC = () => {
         return <ScreeningPage />;
       case '/about':
         return <AboutPage />;
-      case '/faq':
-        return <FaqPage />;
       case '/':
       default:
         return <HomePage />;

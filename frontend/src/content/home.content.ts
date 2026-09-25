@@ -7,7 +7,7 @@ export const homeContent: HomeContent = {
   },
   explanation: {
     text:
-      'Setiap goresan pena menyimpan informasi neuromuskular yang berharga. Penyakit Parkinson sering kali diawali dengan degradasi mikromotorik halus—seperti tremor tersembunyi, fluktuasi tekanan, dan osilasi spasial yang sulit terlihat oleh mata telanjang. ParkinDraw memanfaatkan jaringan konvolusional mutakhir untuk menerjemahkan pola goresan sederhana menjadi indikator penapisan risiko yang presisi, objektif, dan dapat diakses siapa saja.',
+      'Setiap goresan pena menyimpan informasi neuromuskular yang berharga. Penyakit Parkinson sering kali diawali dengan degradasi mikromotorik halus seperti tremor tersembunyi, fluktuasi tekanan, dan osilasi spasial yang sulit terlihat oleh mata telanjang. Parkindraw menganalisis pola goresan untuk mendukung deteksi dini risiko Parkinson secara cepat, non-invansif dan objektif.',
   },
   workflow: {
     heading: 'Dari Menggambar Menciptakan Pola',
@@ -28,7 +28,7 @@ export const homeContent: HomeContent = {
         number: '03',
         title: 'Hasil',
         description:
-          'Lihat hasil analisis sebagai bagian dari proses skrining. Dapatkan estimasi penapisan risiko terpadu berbasis penggabungan probabilitas (late fusion) ketiga gambar, lengkap dengan rincian per pola dan rekomendasi langkah tindak lanjut medis.',
+          'Lihat hasil analisis sebagai bagian dari proses skrining. Dapatkan estimasi penapisan risiko terpadu berbasis penggabungan probabilitas ketiga gambar, lengkap dengan rincian per pola dan rekomendasi langkah tindak lanjut medis.',
       },
     ],
   },
@@ -37,30 +37,23 @@ export const homeContent: HomeContent = {
     items: [
       {
         id: 'circle',
-        name: 'Circle (Lingkaran)',
-        category: 'Pola Melingkar Tertutup',
+        name: 'Lingkaran',
         description:
-          'Pola melingkar yang digunakan sebagai salah satu bentuk gambar dalam proses analisis. Menggambar lingkaran sempurna menuntut regulasi kecepatan sudut (angular velocity) dan tekanan pena yang konstan. Pada penderita Parkinson, defisit dopamin memicu getaran mikro (micro-tremors), keraguan goresan (hesitation), serta penutupan kontur yang tidak simetris.',
+          'Pola melingkar digunakan untuk mengamati koordinasi dan konsistensi gerakan tangan. Saat menggambar, kemampuan menjaga bentuk, kelancaran, dan kestabilan goresan dapat memberikan informasi mengenai kontrol motorik halus.',
       },
       {
         id: 'meander',
-        name: 'Meander (Gelombang Berkelok)',
-        category: 'Pola Berulang Sinusoidal',
+        name: 'Berkelok',
         description:
-          'Pola berulang yang merepresentasikan rangkaian gerakan tangan secara ritmis. Pola ini peka terhadap bradikinesia (kelambanan motorik) dan kekakuan otot (rigidity). Ketidakmampuan menjaga amplitudo puncak dan lembah gelombang yang seragam menjadi indikator disfungsi motorik progresif.',
+          'Pola berkelok menguji kemampuan mempertahankan gerakan tangan secara ritmis dan konsisten. Perubahan pada amplitudo, jarak, dan kelancaran pola dapat mencerminkan variasi kontrol motorik selama gerakan berulang.',
       },
       {
         id: 'spiral',
-        name: 'Spiral (Pilin Archimedes)',
-        category: 'Pola Melingkar Berkelanjutan',
+        name: 'Spiral',
         description:
-          'Pola melingkar berkelanjutan dari titik pusat ke arah luar yang membutuhkan koordinasi gerakan tangan tingkat tinggi. Merupakan uji standar klinis neurologi untuk mendeteksi mikrografia (pengecilan ukuran tulisan secara progresif), distorsi radial, dan fluktuasi tremor aksial saat mempertahankan radius lengkungan.',
+          'Pola spiral dari pusat ke arah luar membutuhkan koordinasi dan kontrol motorik halus. Perubahan pada keteraturan dan kerancaran garis dapat membantu mengidentifikasi karakteristik motorik terkait tremor dan gangguan gerakan.',
       },
     ],
-  },
-  faqPreview: {
-    heading: 'Pertanyaan yang Sering Diajukan',
-    seeAllCta: 'Lihat Seluruh Tanya Jawab & Privasi →',
   },
   ctaBanner: {
     heading: 'Siap Melakukan Penapisan Mandiri?',

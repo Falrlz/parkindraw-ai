@@ -63,9 +63,8 @@ frontend/
 │   │   │       ├── DatasetProvenance.tsx
 │   │   │       └── ModelMetadataTable.tsx
 │   │   │
-│   │   ├── faq/                # Fitur halaman Tanya Jawab & Edukasi
+│   │   ├── faq/                # Komponen Tanya Jawab
 │   │   │   └── components/
-│   │   │       ├── FaqCategoryGroup.tsx
 │   │   │       └── FaqItem.tsx
 │   │   │
 │   │   └── screening/          # Fitur inti Penapisan Neuromotorik
@@ -91,8 +90,7 @@ frontend/
 │   │
 │   ├── pages/                  # Komposisi halaman utama
 │   │   ├── AboutPage.tsx       # Halaman Metodologi & Transparansi Model
-│   │   ├── FaqPage.tsx         # Halaman FAQ & Edukasi
-│   │   ├── HomePage.tsx        # Halaman Beranda (Hero, Workflow, Biomarker)
+│   │   ├── HomePage.tsx        # Halaman Beranda (Hero, Workflow, Biomarker, FAQ)
 │   │   └── ScreeningPage.tsx   # Halaman Skrining Mandiri
 │   │
 │   ├── services/               # Integrasi API & Komunikasi Backend

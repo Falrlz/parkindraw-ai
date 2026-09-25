@@ -31,7 +31,6 @@ export interface HomeWorkflowStep {
 export interface HomeBiomarker {
   id: 'circle' | 'meander' | 'spiral';
   name: string;
-  category: string;
   description: string;
 }
 
@@ -50,10 +49,6 @@ export interface HomeContent {
   biomarkers: {
     heading: string;
     items: HomeBiomarker[];
-  };
-  faqPreview: {
-    heading: string;
-    seeAllCta: string;
   };
   ctaBanner: {
     heading: string;
@@ -153,15 +148,7 @@ export interface FaqItemContent {
   answer: string;
 }
 
-export interface FaqCategory {
-  id: string;
-  title: string;
-  description: string;
-  items: FaqItemContent[];
-}
-
 export interface FaqContent {
-  title: string;
-  lead: string;
-  categories: FaqCategory[];
+  heading: string;
+  items: FaqItemContent[];
 }

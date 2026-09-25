@@ -24,11 +24,11 @@ export const navigationContent: NavigationContent = {
   ],
   footer: {
     brandDescription:
-      'ParkinDraw adalah platform penapisan dini berbasis kecerdasan buatan (computer vision) yang menganalisis perubahan mikromotorik halus pada goresan tangan. Dirancang sebagai instrumen skrining awal yang cepat, non-invasif, dan objektif untuk membantu deteksi dini tremor dan ketidakteraturan motorik terkait Penyakit Parkinson.',
+      'Parkindraw adalah platform skrining berbasis kecerdasan buatan yang menganalisis perubahan mikromotorik halus pada goresan tangan untuk mendukung deteksi dini risiko Parkinson.',
     navigationTitle: 'Navigasi',
     disclaimerTitle: 'Peringatan Medis',
     disclaimerText:
-      'ParkinDraw dirancang secara eksklusif sebagai alat bantu penapisan awal (screening research tool) dan bukan instrumen diagnosis medis definitif. Hasil analisis probabilitas sistem ini tidak menggantikan pemeriksaan fisik, anamnesis, maupun evaluasi klinis resmi oleh dokter spesialis saraf (neurolog). Jika Anda atau kerabat mengalami gejala gangguan gerak, segera konsultasikan ke fasilitas pelayanan kesehatan terdekat.',
-    copyrightText: '© 2026 ParkinDraw AI • Computer-Assisted Parkinson\'s Disease Screening Research',
+      'Hasil skrining ditujukan untuk mendukung deteksi dini risiko Parkinson, bukan sebagai pengganti diagnosis, saran, atau perawatan medis oleh tenaga kesehatan profesional.',
+    copyrightText: '© 2026 Parkindraw',
   },
 };

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowRight, Activity, CheckCircle2, ChevronRight } from 'lucide-react';
+import { ArrowRight, Activity, CheckCircle2 } from 'lucide-react';
 import { useRoute } from '../app/AppRouter';
 import { homeContent } from '../content/home.content';
 import { faqContent } from '../content/faq.content';
@@ -10,10 +10,7 @@ import { FaqItem } from '../features/faq/components/FaqItem';
 
 export const HomePage: React.FC = () => {
   const { navigate } = useRoute();
-  const { hero, explanation, workflow, biomarkers, faqPreview, ctaBanner } = homeContent;
-
-  // Take top 3 FAQ questions for preview
-  const previewFaqs = faqContent.categories.flatMap((cat) => cat.items).slice(0, 3);
+  const { hero, explanation, workflow, biomarkers, ctaBanner } = homeContent;
 
   return (
     <div>
@@ -84,9 +81,6 @@ export const HomePage: React.FC = () => {
                 <div className="w-10 h-10 rounded-lg bg-teal-50 border border-teal-200 flex items-center justify-center text-teal-700 mb-4" aria-hidden="true">
                   <Activity className="w-5 h-5" />
                 </div>
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
-                  {item.category}
-                </span>
                 <h3 className="text-lg font-bold text-slate-900 mb-2">{item.name}</h3>
                 <p className="text-sm text-slate-600 leading-relaxed flex-1">
                   {item.description}
@@ -97,30 +91,19 @@ export const HomePage: React.FC = () => {
         </div>
       </SectionContainer>
 
-      {/* 5. FAQ Preview Section */}
+      {/* 5. FAQ Section (Pertanyaan yang Sering Diajukan) */}
       <div className="bg-slate-100/50 border-t border-slate-200">
         <SectionContainer>
           <header className="text-center max-w-2xl mx-auto mb-8">
             <h2 className="text-2xl sm:text-3xl font-bold text-slate-900">
-              {faqPreview.heading}
+              {faqContent.heading}
             </h2>
           </header>
 
-          <div className="max-w-2xl mx-auto space-y-3 mb-6">
-            {previewFaqs.map((faq) => (
+          <div className="max-w-2xl mx-auto space-y-3">
+            {faqContent.items.map((faq) => (
               <FaqItem key={faq.id} item={faq} />
             ))}
-          </div>
-
-          <div className="text-center">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => navigate('/faq')}
-              rightIcon={<ChevronRight className="w-4 h-4" />}
-            >
-              {faqPreview.seeAllCta}
-            </Button>
           </div>
         </SectionContainer>
       </div>
