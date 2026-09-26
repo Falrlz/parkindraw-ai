@@ -13,7 +13,7 @@ export const Footer: React.FC = () => {
         {/* Kolom 1: Visi ParkinDraw */}
         <div className="md:col-span-5">
           <p className="font-bold text-base text-slate-900 tracking-tight mb-2">
-            ParkinDraw <span className="text-teal-700">AI</span>
+            Parkindraw
           </p>
           <p className="text-slate-600 leading-relaxed text-xs sm:text-sm">
             {footer.brandDescription}

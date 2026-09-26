@@ -13,25 +13,25 @@ export const faqContent: FaqContent = {
       id: 'why-drawing',
       question: 'Mengapa Menggunakan Uji Menggambar?',
       answer:
-        'Aktivitas menulis dan menggambar menuntut koordinasi neuromuskular yang sangat kompleks dan terintegrasi antara korteks motorik, ganglia basalis, dan serebelum. Gerakan motorik halus ini merupakan salah satu fungsi biologis pertama yang memperlihatkan distorsi mikroskopis akibat kekurangan dopamin—bahkan sering kali muncul sebelum gejala tremor kasar terlihat jelas dalam aktivitas harian.',
+        'Aktivitas menulis dan menggambar menuntut koordinasi neuromuskular yang sangat kompleks dan terintegrasi antara korteks motorik, ganglia basalis, dan serebelum. Gerakan motorik halus ini merupakan salah satu fungsi biologis pertama yang memperlihatkan distorsi mikroskopis akibat kekurangan dopamin, bahkan sering kali muncul sebelum gejala tremor kasar terlihat jelas dalam aktivitas harian.',
     },
     {
       id: 'what-is-parkindraw',
-      question: 'Apa itu ParkinDraw?',
+      question: 'Apa itu Parkindraw?',
       answer:
-        'ParkinDraw adalah platform penapisan mandiri (screening research tool) berbasis web yang memanfaatkan algoritma Computer Vision dan Deep Learning untuk menganalisis karakteristik biomekanik goresan tangan pada uji gambar Lingkaran, Meander, dan Spiral. Tujuannya adalah menyediakan akses penapisan awal yang praktis, objektif, dan non-invasif bagi masyarakat luas.',
+        'Parkindraw adalah platform skrining berbasis kecerdasan buatan (AI) yang menganalisis perubahan mikromotorik halus pada goresan tangan melalui uji pola gambar Lingkaran, Berkelok (Meander), dan Spiral. Dengan memanfaatkan teknologi computer vision dan deep learning, Parkindraw dirancang untuk mendukung deteksi dini risiko Parkinson secara cepat, objektif, dan non-invasif.',
     },
     {
       id: 'how-it-works',
       question: 'Bagaimana Cara Kerjanya?',
       answer:
-        'Saat Anda menggambar atau mengunggah citra ke ParkinDraw, sistem melakukan standardisasi citra (resolusi 224 × 224 piksel dengan normalisasi ImageNet) dan mengalirkannya ke model ResNet-18 yang telah dilatih secara khusus. Model mengekstraksi representasi fitur visual yang mewakili ketidakteraturan goresan tangan. Probabilitas dari ketiga gambar kemudian digabungkan menggunakan algoritma Late Multi-Modal Fusion untuk menghasilkan estimasi penapisan risiko keseluruhan.',
+        'Saat Anda menggambar atau mengunggah citra ke Parkindraw, sistem melakukan standardisasi citra (resolusi 224 × 224 piksel dengan normalisasi ImageNet) dan mengalirkannya ke model ResNet-18 yang telah dilatih secara khusus. Model mengekstraksi representasi fitur visual yang mewakili ketidakteraturan goresan tangan. Probabilitas dari ketiga gambar kemudian digabungkan menggunakan algoritma Late Multi-Modal Fusion untuk menghasilkan estimasi penapisan risiko keseluruhan.',
     },
     {
       id: 'is-this-diagnosis',
-      question: 'Apakah Hasil Analisis ParkinDraw Merupakan Diagnosis Medis?',
+      question: 'Apakah Hasil Analisis Parkindraw Merupakan Diagnosis Medis?',
       answer:
-        'Bukan. ParkinDraw bukanlah alat diagnosis medis definitif. ParkinDraw adalah instrumen penapisan risiko (screening risk assessment). Hasil "Terindikasi Parkinson" hanya mengindikasikan bahwa pola goresan tangan Anda memiliki karakteristik visual dan statistik yang menyerupai sampel penderita Parkinson pada dataset pelatihan kami.',
+        'Bukan. Parkindraw bukanlah alat diagnosis medis definitif. Parkindraw adalah instrumen penapisan risiko (screening risk assessment). Hasil "Terindikasi Parkinson" hanya mengindikasikan bahwa pola goresan tangan Anda memiliki karakteristik visual dan statistik yang menyerupai sampel penderita Parkinson pada dataset pelatihan kami.',
     },
     {
       id: 'replace-doctor',
