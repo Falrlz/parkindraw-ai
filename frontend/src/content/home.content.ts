@@ -45,7 +45,7 @@ export const homeContent: HomeContent = {
         id: 'meander',
         name: 'Berkelok',
         description:
-          'Pola berkelok menguji kemampuan mempertahankan gerakan tangan secara ritmis dan konsisten. Perubahan pada amplitudo, jarak, dan kelancaran pola dapat mencerminkan variasi kontrol motorik selama gerakan berulang.',
+          'Pola berkelok menguji kemampuan mempertahankan gerakan tangan secara ritmis dan konsisten. Perubahan pada panjang garis, jarak, dan ketegasan sudut belokan dapat mencerminkan variasi kontrol motorik selama gerakan berulang.',
       },
       {
         id: 'spiral',

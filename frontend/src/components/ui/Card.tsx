@@ -8,7 +8,7 @@ export const Card: React.FC<CardProps> = ({ children, className = '', ...props }
   return (
     <div
       {...props}
-      className={`bg-white border border-slate-200 rounded-xl overflow-hidden ${className}`}
+      className={`bg-paper border border-line rounded-[10px] overflow-hidden ${className}`}
     >
       {children}
     </div>
@@ -17,7 +17,7 @@ export const Card: React.FC<CardProps> = ({ children, className = '', ...props }
 
 export const CardHeader: React.FC<CardProps> = ({ children, className = '', ...props }) => {
   return (
-    <header {...props} className={`p-4 sm:p-5 border-b border-slate-100 ${className}`}>
+    <header {...props} className={`px-5 pt-5 pb-4 sm:px-6 border-b border-line ${className}`}>
       {children}
     </header>
   );
@@ -25,7 +25,7 @@ export const CardHeader: React.FC<CardProps> = ({ children, className = '', ...p
 
 export const CardBody: React.FC<CardProps> = ({ children, className = '', ...props }) => {
   return (
-    <div {...props} className={`p-4 sm:p-5 ${className}`}>
+    <div {...props} className={`p-5 sm:p-6 ${className}`}>
       {children}
     </div>
   );
@@ -33,7 +33,7 @@ export const CardBody: React.FC<CardProps> = ({ children, className = '', ...pro
 
 export const CardFooter: React.FC<CardProps> = ({ children, className = '', ...props }) => {
   return (
-    <footer {...props} className={`p-4 sm:p-5 border-t border-slate-100 bg-slate-50/50 ${className}`}>
+    <footer {...props} className={`px-5 py-4 sm:px-6 border-t border-line bg-ground ${className}`}>
       {children}
     </footer>
   );

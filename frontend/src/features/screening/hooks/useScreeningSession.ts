@@ -53,13 +53,14 @@ export function useScreeningSession() {
     }));
   }, []);
 
-  const submitSession = useCallback(async () => {
-    const { circle, meander, spiral } = state.drawings;
+  const submitSession = useCallback(async (latest?: Partial<ScreeningSessionState['drawings']>) => {
+    // `latest` carries a drawing saved in the same tick, before state has re-rendered
+    const { circle, meander, spiral } = { ...state.drawings, ...latest };
 
     if (!circle.blob || !meander.blob || !spiral.blob) {
       setState((prev) => ({
         ...prev,
-        error: 'Harap selesaikan ketiga pola gambar (Lingkaran, Meander, dan Spiral) terlebih dahulu.',
+        error: 'Harap selesaikan ketiga pola gambar (Lingkaran, Berkelok, dan Spiral) terlebih dahulu.',
       }));
       return;
     }

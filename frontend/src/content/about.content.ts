@@ -2,7 +2,7 @@ import type { AboutContent } from './types';
 
 export const aboutContent: AboutContent = {
   hero: {
-    title: 'Kecerdasan Buatan & Transparansi Sains',
+    title: 'Kecerdasan Buatan di Balik Parkindraw',
     subtitle:
       'Membedah arsitektur deep learning, formulasi fusi probabilitas, metadata teknis, dan dataset pelatihan yang mendasari sistem ParkinDraw AI.',
   },
@@ -46,23 +46,23 @@ export const aboutContent: AboutContent = {
         precision: '85.71%',
         recall: '100.00%',
         f1Score: '0.9231',
-        rocAuc: '0.9904',
+        rocAuc: '0.9762',
       },
       {
-        modality: 'Meander (Gelombang)',
+        modality: 'Berkelok',
         accuracy: '88.46%',
         precision: '82.14%',
         recall: '95.83%',
         f1Score: '0.8846',
-        rocAuc: '0.9519',
+        rocAuc: '0.9360',
       },
       {
-        modality: 'Spiral (Pilin)',
+        modality: 'Spiral',
         accuracy: '88.46%',
         precision: '80.00%',
         recall: '100.00%',
         f1Score: '0.8889',
-        rocAuc: '0.9610',
+        rocAuc: '0.9911',
       },
       {
         modality: 'Macro Average (Rerata)',
@@ -74,7 +74,7 @@ export const aboutContent: AboutContent = {
       },
     ],
     recallNote:
-      'Nilai Sensitivitas/Recall rata-rata sebesar 98.61% membuktikan bahwa model sangat peka dalam menjaring potensi kasus positif Parkinson sehingga meminimalkan peluang lolosnya pasien berisiko (false negative sangat rendah).',
+      'Nilai Sensitivitas/Recall rata-rata sebesar 98.61% pada data uji holdout (13 subjek) menunjukkan bahwa model sangat peka dalam menjaring potensi kasus positif Parkinson, sehingga peluang lolosnya pasien berisiko (false negative) rendah pada data uji ini.',
   },
   datasetProvenance: {
     heading: 'Dataset Pelatihan & Protokol Integritas',

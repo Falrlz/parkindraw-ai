@@ -14,7 +14,7 @@ export const SectionContainer: React.FC<SectionContainerProps> = ({
   return (
     <Component
       {...props}
-      className={`w-full max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12 ${className}`}
+      className={`w-full max-w-[1240px] mx-auto px-5 sm:px-8 lg:px-12 py-16 sm:py-24 ${className}`}
     >
       {children}
     </Component>

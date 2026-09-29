@@ -19,10 +19,21 @@ export const Tabs: React.FC<TabsProps> = ({
   onChange,
   className = '',
 }) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+    const index = tabs.findIndex((t) => t.id === activeTab);
+    const delta = e.key === 'ArrowRight' ? 1 : -1;
+    const next = tabs[(index + delta + tabs.length) % tabs.length];
+    onChange(next.id);
+    const el = e.currentTarget.querySelector<HTMLButtonElement>(`[data-tab="${next.id}"]`);
+    el?.focus();
+  };
+
   return (
     <div
       role="tablist"
-      className={`inline-flex p-1 bg-slate-100 border border-slate-200 rounded-lg gap-1 ${className}`}
+      onKeyDown={handleKeyDown}
+      className={`inline-flex p-1 bg-paper border border-line rounded-lg gap-1 ${className}`}
     >
       {tabs.map((tab) => {
         const isActive = tab.id === activeTab;
@@ -31,12 +42,12 @@ export const Tabs: React.FC<TabsProps> = ({
             key={tab.id}
             role="tab"
             type="button"
+            data-tab={tab.id}
             aria-selected={isActive}
+            tabIndex={isActive ? 0 : -1}
             onClick={() => onChange(tab.id)}
-            className={`inline-flex items-center gap-2 px-3 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-colors cursor-pointer ${
-              isActive
-                ? 'bg-white text-slate-900 shadow-xs font-semibold'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+            className={`inline-flex items-center justify-center gap-2 min-h-11 px-4 text-sm sm:text-[15px] font-medium rounded-md transition-colors duration-200 cursor-pointer ${
+              isActive ? 'bg-ink-fill text-white' : 'text-body hover:text-ink hover:bg-ground'
             }`}
           >
             {tab.icon}

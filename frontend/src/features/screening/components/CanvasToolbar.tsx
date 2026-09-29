@@ -1,6 +1,5 @@
 import React from 'react';
 import { RotateCcw, Trash2, Eye, EyeOff } from 'lucide-react';
-import { Button } from '../../../components/ui/Button';
 
 export interface CanvasToolbarProps {
   strokeWidth: number;
@@ -12,6 +11,14 @@ export interface CanvasToolbarProps {
   onToggleWatermark: () => void;
 }
 
+const toolButton =
+  'inline-flex items-center justify-center lg:justify-start gap-2 min-h-12 tight:min-h-11 px-3 rounded-md text-sm sm:text-[15px] font-medium transition-colors cursor-pointer disabled:cursor-not-allowed disabled:text-line-strong';
+
+/**
+ * Phones: two rows above the sheet (pen weight, then actions).
+ * Laptops: a vertical rail beside the sheet, so the sheet can use the full
+ * viewport height. Every target is at least 48px tall for shaky hands.
+ */
 export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
   strokeWidth,
   onStrokeWidthChange,
@@ -22,57 +29,61 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
   onToggleWatermark,
 }) => {
   return (
-    <div className="flex flex-wrap items-center justify-between gap-2.5 p-3 bg-slate-100 border border-slate-200 rounded-lg text-xs sm:text-sm">
+    <div className="flex flex-col gap-3 lg:gap-5 tight:gap-3 lg:w-44 lg:shrink-0">
       {/* Stroke Width Selector */}
-      <div className="flex items-center gap-1.5">
-        <span className="text-slate-600 font-medium mr-1 hidden sm:inline">Ketebalan:</span>
-        {[2, 3, 5].map((width) => (
-          <button
-            key={width}
-            type="button"
-            onClick={() => onStrokeWidthChange(width)}
-            className={`px-2.5 py-1 rounded-md font-medium border cursor-pointer ${
-              strokeWidth === width
-                ? 'bg-teal-700 text-white border-teal-700 font-semibold'
-                : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
-            }`}
-          >
-            {width === 2 ? 'Tipis' : width === 3 ? 'Sedang' : 'Tebal'}
-          </button>
-        ))}
+      <div className="flex items-center lg:items-stretch lg:flex-col gap-3 lg:gap-2" role="group" aria-label="Ketebalan">
+        <span className="text-sm text-muted hidden sm:inline tight:hidden">Ketebalan:</span>
+        <div className="grid grid-cols-3 lg:grid-cols-1 flex-1 p-1 bg-paper border border-line rounded-lg">
+          {[2, 3, 5].map((width) => {
+            const isActive = strokeWidth === width;
+            return (
+              <button
+                key={width}
+                type="button"
+                aria-pressed={isActive}
+                onClick={() => onStrokeWidthChange(width)}
+                className={`${toolButton} ${isActive ? 'bg-ink-fill text-white' : 'text-body hover:text-ink hover:bg-ground'}`}
+              >
+                <span className="w-3 flex justify-center" aria-hidden="true">
+                  <span className="rounded-full bg-current" style={{ width: width + 3, height: width + 3 }} />
+                </span>
+                {width === 2 ? 'Tipis' : width === 3 ? 'Sedang' : 'Tebal'}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Action Tools */}
-      <div className="flex items-center gap-2">
+      <div className="grid grid-cols-3 lg:grid-cols-1 gap-1 lg:pt-4 tight:pt-3 lg:border-t lg:border-line">
         <button
           type="button"
           onClick={onToggleWatermark}
-          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md font-medium border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 cursor-pointer text-xs"
+          aria-pressed={showWatermark}
+          className={`${toolButton} text-body hover:text-ink hover:bg-paper text-center lg:text-left leading-tight`}
         >
-          {showWatermark ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+          {showWatermark ? <EyeOff className="w-4 h-4 shrink-0" aria-hidden="true" /> : <Eye className="w-4 h-4 shrink-0" aria-hidden="true" />}
           <span>{showWatermark ? 'Sembunyikan Panduan' : 'Lihat Panduan'}</span>
         </button>
 
-        <Button
+        <button
           type="button"
-          size="sm"
-          variant="outline"
           disabled={!canUndo}
           onClick={onUndo}
-          leftIcon={<RotateCcw className="w-3.5 h-3.5" />}
+          className={`${toolButton} text-body hover:text-ink hover:bg-paper disabled:hover:bg-transparent`}
         >
+          <RotateCcw className="w-4 h-4 shrink-0" aria-hidden="true" />
           Urungkan
-        </Button>
+        </button>
 
-        <Button
+        <button
           type="button"
-          size="sm"
-          variant="secondary"
           onClick={onClear}
-          leftIcon={<Trash2 className="w-3.5 h-3.5 text-rose-600" />}
+          className={`${toolButton} text-rose-ink hover:bg-rose-wash`}
         >
+          <Trash2 className="w-4 h-4 shrink-0" aria-hidden="true" />
           Hapus
-        </Button>
+        </button>
       </div>
     </div>
   );

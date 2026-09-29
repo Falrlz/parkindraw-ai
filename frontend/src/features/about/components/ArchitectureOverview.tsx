@@ -1,51 +1,33 @@
 import React from 'react';
-import { Network, Layers } from 'lucide-react';
-import { aboutContent } from '../../../content/about.content';
-import { Card, CardHeader, CardBody } from '../../../components/ui/Card';
 
-export const ArchitectureOverview: React.FC = () => {
+import { aboutContent } from '../../../content/about.content';
+import { Chapter } from './Chapter';
+
+const lede = 'text-lg sm:text-xl short:text-[17px] squat:text-base text-body leading-relaxed';
+
+/** First chapter: part of the page's opening screen, together with the page title. */
+export const TransferLearningChapter: React.FC<{ className?: string }> = ({ className = '' }) => {
   const { aiRationale } = aboutContent;
 
   return (
-    <div className="space-y-6 mb-8">
-      {/* Transfer Learning Rationale */}
-      <Card>
-        <CardHeader className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-teal-50 border border-teal-200 flex items-center justify-center text-teal-700" aria-hidden="true">
-            <Network className="w-5 h-5" />
-          </div>
-          <div>
-            <h2 className="text-lg font-bold text-slate-900">{aiRationale.heading}</h2>
-            <p className="text-xs text-slate-500 font-medium">Deep Residual Learning & Frozen Backbone</p>
-          </div>
-        </CardHeader>
-        <CardBody>
-          <p className="text-sm sm:text-base text-slate-700 leading-relaxed">
-            {aiRationale.transferLearningText}
-          </p>
-        </CardBody>
-      </Card>
+    <Chapter heading={aiRationale.heading} subline="Deep Residual Learning & Frozen Backbone" className={className}>
+      <p className={`${lede} max-w-[60ch]`}>{aiRationale.transferLearningText}</p>
+    </Chapter>
+  );
+};
 
-      {/* Late Fusion Section */}
-      <Card>
-        <CardHeader className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-200 flex items-center justify-center text-indigo-700" aria-hidden="true">
-            <Layers className="w-5 h-5" />
-          </div>
-          <div>
-            <h2 className="text-lg font-bold text-slate-900">{aiRationale.lateFusionHeading}</h2>
-            <p className="text-xs text-slate-500 font-medium">Penggabungan Probabilitas Independen</p>
-          </div>
-        </CardHeader>
-        <CardBody className="space-y-4">
-          <p className="text-sm sm:text-base text-slate-700 leading-relaxed">
-            {aiRationale.lateFusionText}
-          </p>
-          <div className="bg-slate-100 p-4 rounded-lg border border-slate-200 text-center font-mono text-xs sm:text-sm font-semibold text-slate-800">
-            {aiRationale.formulaText}
-          </div>
-        </CardBody>
-      </Card>
-    </div>
+export const LateFusionChapter: React.FC = () => {
+  const { aiRationale } = aboutContent;
+
+  return (
+    <Chapter heading={aiRationale.lateFusionHeading} subline="Penggabungan Probabilitas Independen">
+      <p className={`${lede} max-w-[62ch]`}>{aiRationale.lateFusionText}</p>
+
+      <figure className="mt-8 rounded-[10px] bg-ink-fill text-white px-6 py-10 sm:px-10 sm:py-12">
+        <code className="tabular block font-sans text-center text-lg sm:text-xl lg:text-2xl font-medium tracking-[-0.01em] leading-relaxed text-balance">
+          {aiRationale.formulaText}
+        </code>
+      </figure>
+    </Chapter>
   );
 };

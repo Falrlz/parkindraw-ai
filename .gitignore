@@ -74,3 +74,12 @@ frontend/build/
 .DS_Store
 Thumbs.db
 mlflow.db
+*.exe
+
+# AI Agent Harnesses & Tooling (Claude, Impeccable)
+.claude/
+.impeccable/
+PRODUCT.md
+DESIGN.md
+
+

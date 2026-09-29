@@ -49,23 +49,37 @@ export const FileUploadDropzone: React.FC<FileUploadDropzoneProps> = ({
     if (e.target.files && e.target.files.length > 0) {
       processFile(e.target.files[0]);
     }
+    e.target.value = '';
   };
 
+  const openPicker = () => fileInputRef.current?.click();
+
   return (
-    <div className={`w-full max-w-[448px] mx-auto ${className}`}>
+    <div className={className}>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/png, image/jpeg, image/jpg, image/webp"
+        onChange={handleInputChange}
+        className="hidden"
+        aria-label="Pilih berkas gambar untuk diunggah"
+      />
+
       {selectedPreviewUrl ? (
-        <div className="relative border-2 border-slate-300 rounded-xl overflow-hidden bg-white p-3 flex flex-col items-center">
-          <div className="w-full aspect-square max-h-[380px] bg-slate-50 rounded-lg overflow-hidden flex items-center justify-center border border-slate-200">
-            <img
-              src={selectedPreviewUrl}
-              alt="Pratinjau berkas yang diunggah"
-              className="max-w-full max-h-full object-contain"
-            />
+        <div>
+          <div>
+            <div className="w-full aspect-square max-w-[560px] lg:max-w-[min(560px,max(260px,calc(100svh_-_280px)))] mx-auto bg-white border border-line-strong rounded-[10px] overflow-hidden flex items-center justify-center">
+              <img
+                src={selectedPreviewUrl}
+                alt="Pratinjau berkas yang diunggah"
+                className="max-w-full max-h-full object-contain"
+              />
+            </div>
           </div>
 
-          <div className="mt-3 flex items-center justify-between w-full">
-            <span className="text-xs text-slate-500 font-medium flex items-center gap-1.5">
-              <FileImage className="w-4 h-4 text-teal-700" />
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+            <span className="text-sm text-aqua-deep font-medium flex items-center gap-2">
+              <FileImage className="w-4 h-4" aria-hidden="true" />
               Berkas siap diproses
             </span>
             <Button
@@ -73,56 +87,57 @@ export const FileUploadDropzone: React.FC<FileUploadDropzoneProps> = ({
               variant="outline"
               size="sm"
               onClick={onClear}
-              leftIcon={<X className="w-3.5 h-3.5" />}
+              leftIcon={<X className="w-4 h-4" />}
             >
               Ganti Berkas
             </Button>
           </div>
         </div>
       ) : (
-        <div
-          onDragOver={(e) => {
-            e.preventDefault();
-            setDragOver(true);
-          }}
-          onDragLeave={() => setDragOver(false)}
-          onDrop={handleDrop}
-          onClick={() => fileInputRef.current?.click()}
-          className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors flex flex-col items-center justify-center min-h-[360px] ${
-            dragOver
-              ? 'border-teal-700 bg-teal-50/50'
-              : 'border-slate-300 bg-white hover:border-slate-400 hover:bg-slate-50/50'
-          }`}
-        >
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/png, image/jpeg, image/jpg, image/webp"
-            onChange={handleInputChange}
-            className="hidden"
-            aria-label="Pilih berkas gambar untuk diunggah"
-          />
+        <div>
+          <div
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                openPicker();
+              }
+            }}
+            onDragOver={(e) => {
+              e.preventDefault();
+              setDragOver(true);
+            }}
+            onDragLeave={() => setDragOver(false)}
+            onDrop={handleDrop}
+            onClick={openPicker}
+            className={`w-full aspect-square max-w-[560px] lg:max-w-[min(560px,max(260px,calc(100svh_-_280px)))] mx-auto rounded-[10px] border-2 border-dashed p-8 text-center cursor-pointer transition-colors flex flex-col items-center justify-center ${
+              dragOver
+                ? 'border-iris bg-iris-wash'
+                : 'border-line-strong bg-paper hover:border-iris'
+            }`}
+          >
+            <span className="w-14 h-14 rounded-full bg-iris-wash flex items-center justify-center text-iris mb-5" aria-hidden="true">
+              <Upload className="w-6 h-6" strokeWidth={1.75} />
+            </span>
 
-          <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 mb-4" aria-hidden="true">
-            <Upload className="w-6 h-6" />
-          </div>
-
-          <p className="font-semibold text-slate-900 text-sm mb-1">
-            Klik untuk memilih foto atau seret berkas ke sini
-          </p>
-          <p className="text-xs text-slate-500 mb-4 max-w-xs">
-            Foto hasil gambar pada kertas putih polos. Format yang didukung: PNG, JPG, atau WebP (maks. 10 MB).
-          </p>
-
-          <Button type="button" size="sm" variant="secondary" className="pointer-events-none">
-            Pilih Foto Kertas
-          </Button>
-
-          {error && (
-            <p className="mt-3 text-xs text-rose-700 font-medium" role="alert">
-              {error}
+            <p className="font-medium text-ink text-lg max-w-[24ch]">
+              Klik untuk memilih foto atau seret berkas ke sini
             </p>
-          )}
+            <p className="mt-2 text-sm text-body max-w-[34ch] leading-relaxed">
+              Foto hasil gambar pada kertas putih polos. Format yang didukung: PNG, JPG, atau WebP (maks. 10 MB).
+            </p>
+
+            <span className="mt-6 inline-flex items-center min-h-11 px-5 rounded-md border border-iris text-iris text-[15px] font-medium">
+              Pilih Foto Kertas
+            </span>
+
+            {error && (
+              <p className="mt-4 text-sm text-rose-ink font-medium" role="alert">
+                {error}
+              </p>
+            )}
+          </div>
         </div>
       )}
     </div>

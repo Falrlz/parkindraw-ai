@@ -3,8 +3,8 @@ import type { DrawingModality, SessionPredictionResponse } from '../../../servic
 export type ScreeningStep = 0 | 1 | 2 | 3 | 4;
 // 0: Tutorial & Kesiapan
 // 1: Lingkaran (Circle)
-// 2: Meander (Gelombang)
-// 3: Spiral (Pilin)
+// 2: Berkelok (Meander)
+// 3: Spiral
 // 4: Laporan Hasil (Report)
 
 export type InputMode = 'canvas' | 'upload';

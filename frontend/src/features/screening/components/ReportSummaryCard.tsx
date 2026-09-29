@@ -1,86 +1,73 @@
 import React from 'react';
 import { CheckCircle2, AlertTriangle } from 'lucide-react';
-import type { SessionPredictionResponse } from '../../../services/types';
+import type { SessionPredictionResponse, DrawingModality } from '../../../services/types';
 import { screeningContent } from '../../../content/screening.content';
-import { ProgressBar } from '../../../components/ui/ProgressBar';
+import { useCountUp } from '../hooks/useCountUp';
+import { ProbabilityScale } from './ProbabilityScale';
 
 export interface ReportSummaryCardProps {
   result: SessionPredictionResponse;
 }
 
+const readingLabels: Record<DrawingModality, string> = {
+  circle: 'Lingkaran',
+  meander: 'Berkelok',
+  spiral: 'Spiral',
+};
+
+/**
+ * Report opening: the verdict set like a step title on the left, the one
+ * measuring instrument on the right. No card, no accent stripe.
+ */
 export const ReportSummaryCard: React.FC<ReportSummaryCardProps> = ({ result }) => {
   const { report } = screeningContent;
   const isParkinson = result.fusion_prediction === 'Parkinson';
   const percentage = result.fusion_probability * 100;
+  const shown = useCountUp(percentage);
+
+  const readings = (['circle', 'meander', 'spiral'] as DrawingModality[]).map((m) => ({
+    modality: m,
+    label: readingLabels[m],
+    value: result.drawings[m].probabilities.Parkinson,
+  }));
 
   return (
-    <div
-      className={`border-2 rounded-xl p-5 sm:p-6 mb-6 ${
-        isParkinson
-          ? 'bg-amber-50/60 border-amber-300'
-          : 'bg-emerald-50/60 border-emerald-300'
-      }`}
-    >
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200/80">
-        <div className="flex items-start gap-3">
-          <div
-            className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-              isParkinson ? 'bg-amber-200 text-amber-900' : 'bg-emerald-200 text-emerald-900'
-            }`}
-            aria-hidden="true"
-          >
-            {isParkinson ? (
-              <AlertTriangle className="w-6 h-6" />
-            ) : (
-              <CheckCircle2 className="w-6 h-6" />
-            )}
-          </div>
-          <div>
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
-              Hasil Penapisan Akhir
-            </span>
-            <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 mt-0.5">
-              {isParkinson
-                ? report.statusLabels.parkinson
-                : report.statusLabels.healthy}
-            </h2>
-            <p className="text-sm text-slate-700 mt-1 leading-relaxed max-w-xl">
-              {isParkinson
-                ? report.statusLabels.parkinsonDesc
-                : report.statusLabels.healthyDesc}
-            </p>
-          </div>
-        </div>
-
-        <div className="text-left sm:text-right shrink-0">
-          <span className="text-xs text-slate-500 block">Probabilitas Parkinson:</span>
-          <span
-            className={`text-3xl sm:text-4xl font-black ${
-              isParkinson ? 'text-amber-900' : 'text-emerald-900'
-            }`}
-          >
-            {percentage.toFixed(1)}%
-          </span>
-          <span className="text-xs text-slate-500 block mt-0.5">
-            Ambang Batas: {(result.threshold * 100).toFixed(0)}%
-          </span>
-        </div>
+    <section className="print-break-avoid grid grid-cols-12 gap-x-6 lg:gap-x-12 gap-y-10 pb-10 short:pb-8 border-b border-line">
+      <div className="col-span-12 lg:col-span-5">
+        {/* Item heading step (30 → 36px), one below the screen title */}
+        <h3 className="text-3xl sm:text-4xl short:text-3xl font-medium tracking-[-0.03em] leading-[1.1] text-ink">
+          {(isParkinson ? report.statusLabels.parkinson : report.statusLabels.healthy).replace(' / ', ' / ')}
+        </h3>
+        <p className={`mt-4 flex items-center gap-2 text-base font-medium ${isParkinson ? 'text-amber-ink' : 'text-aqua-deep'}`}>
+          {isParkinson ? (
+            <AlertTriangle className="w-4 h-4 shrink-0" strokeWidth={2} aria-hidden="true" />
+          ) : (
+            <CheckCircle2 className="w-4 h-4 shrink-0" strokeWidth={2} aria-hidden="true" />
+          )}
+          Hasil Penapisan Akhir
+        </p>
+        <p className="mt-4 text-lg text-body leading-relaxed max-w-[48ch]">
+          {isParkinson ? report.statusLabels.parkinsonDesc : report.statusLabels.healthyDesc}
+        </p>
       </div>
 
-      {/* Progress Bar Display */}
-      <div className="pt-4">
-        <ProgressBar
-          value={percentage}
-          label={report.probabilityHeading}
-          color={isParkinson ? 'amber' : 'emerald'}
+      <div className="col-span-12 lg:col-span-7">
+        <p className="text-sm text-body">Probabilitas Parkinson:</p>
+        {/* Display numeral on the same step as the home workflow numerals (36 → 48px) */}
+        <p className="mt-1 text-4xl sm:text-5xl short:text-4xl font-medium tracking-[-0.04em] leading-none text-ink tabular">
+          <span aria-hidden="true">{shown.toFixed(1)}</span>
+          <span className="sr-only">{percentage.toFixed(1)}</span>
+          <span className="text-[0.45em] tracking-[-0.02em] align-top ml-1 text-body">%</span>
+        </p>
+
+        <ProbabilityScale
+          className="mt-6 short:mt-4"
+          fused={result.fusion_probability}
+          threshold={result.threshold}
+          readings={readings}
+          caption={report.probabilityHeading}
         />
       </div>
-
-      {/* Metadata Session */}
-      <div className="mt-4 pt-3 border-t border-slate-200/60 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
-        <span>ID Sesi: <code className="font-mono bg-white px-1.5 py-0.5 rounded border border-slate-200">{result.session_id.slice(0, 13)}...</code></span>
-        <span>Waktu Selesai: {new Date(result.timestamp).toLocaleString('id-ID')}</span>
-      </div>
-    </div>
+    </section>
   );
 };

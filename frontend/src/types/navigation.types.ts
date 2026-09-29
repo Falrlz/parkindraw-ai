@@ -1,4 +1,4 @@
-import { AppRoute } from '../app/routes';
+import type { AppRoute } from '../app/routes';
 
 export type { AppRoute };
 

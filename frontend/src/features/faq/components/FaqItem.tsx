@@ -9,9 +9,7 @@ export interface FaqItemProps {
 export const FaqItem: React.FC<FaqItemProps> = ({ item }) => {
   return (
     <Accordion id={item.id} title={item.question}>
-      <p className="text-slate-700 leading-relaxed text-sm sm:text-base">
-        {item.answer}
-      </p>
+      <p className="max-w-[68ch]">{item.answer}</p>
     </Accordion>
   );
 };

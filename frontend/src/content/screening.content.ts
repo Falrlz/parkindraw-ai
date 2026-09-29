@@ -10,7 +10,7 @@ export const screeningContent: ScreeningContent = {
       'Gunakan tangan dominan yang biasa Anda gunakan untuk menulis atau menggambar sehari-hari.',
       'Goreskan garis dengan kecepatan alami. Jangan terburu-buru dan jangan memaksakan kecepatan.',
       'Anda dapat menggambar langsung pada layar perangkat atau menggambar di selembar kertas putih polos lalu mengunggah fotonya.',
-      'Sesi ini terdiri dari 3 pola berturut-turut: Lingkaran (Circle), Meander (Gelombang), dan diakhiri dengan Spiral.',
+      'Sesi ini terdiri dari 3 pola berturut-turut: Lingkaran (Circle), Berkelok, dan diakhiri dengan Spiral.',
     ],
     startButtonText: 'Mulai Skrining Mandiri',
   },
@@ -28,17 +28,17 @@ export const screeningContent: ScreeningContent = {
     meander: {
       stepNumber: 2,
       modality: 'meander',
-      title: 'Meander (Gelombang Berkelok)',
-      category: 'Langkah 2 dari 3: Pola Berulang Sinusoidal',
+      title: 'Berkelok',
+      category: 'Langkah 2 dari 3: Pola Siku Berkelok ke Dalam',
       instructionText:
-        'Buat pola gelombang sinusoidal berkelok secara berkesinambungan dari kiri ke kanan tanpa mengangkat pena.',
+        'Mulailah dari ujung kiri bawah, tarik garis lurus ke atas, lalu belok siku mengikuti panduan: ke kanan, ke bawah, ke kiri, dan terus masuk ke tengah tanpa mengangkat pena.',
       canvasTip:
-        'Pertahankan ritme puncak dan lembah gelombang secara konstan dan mengalir.',
+        'Jaga garis tetap lurus, sudut belokan tetap tegas, dan jarak antar lintasan tetap sama.',
     },
     spiral: {
       stepNumber: 3,
       modality: 'spiral',
-      title: 'Spiral (Pilin Archimedes)',
+      title: 'Spiral',
       category: 'Langkah 3 dari 3: Pola Melingkar Berkelanjutan',
       instructionText:
         'Mulailah dari titik pusat, lalu putar garis melingkar keluar secara bertahap menyerupai bentuk obat nyamuk.',

@@ -10,30 +10,26 @@ export interface AlertProps {
   className?: string;
 }
 
-const alertConfig: Record<AlertType, { border: string; bg: string; text: string; icon: React.ReactNode }> = {
+const alertConfig: Record<AlertType, { surface: string; title: string; icon: React.ReactNode }> = {
   info: {
-    border: 'border-teal-200',
-    bg: 'bg-teal-50',
-    text: 'text-teal-900',
-    icon: <Info className="w-5 h-5 text-teal-700 shrink-0 mt-0.5" aria-hidden="true" />,
+    surface: 'bg-iris-wash border-iris/25 text-ink',
+    title: 'text-iris-deep',
+    icon: <Info className="w-5 h-5 text-iris shrink-0 mt-0.5" strokeWidth={1.75} aria-hidden="true" />,
   },
   warning: {
-    border: 'border-amber-200',
-    bg: 'bg-amber-50',
-    text: 'text-amber-950',
-    icon: <AlertTriangle className="w-5 h-5 text-amber-700 shrink-0 mt-0.5" aria-hidden="true" />,
+    surface: 'bg-amber-wash border-amber-line text-ink',
+    title: 'text-amber-ink',
+    icon: <AlertTriangle className="w-5 h-5 text-amber-ink shrink-0 mt-0.5" strokeWidth={1.75} aria-hidden="true" />,
   },
   error: {
-    border: 'border-rose-200',
-    bg: 'bg-rose-50',
-    text: 'text-rose-950',
-    icon: <AlertCircle className="w-5 h-5 text-rose-700 shrink-0 mt-0.5" aria-hidden="true" />,
+    surface: 'bg-rose-wash border-rose-ink/25 text-ink',
+    title: 'text-rose-ink',
+    icon: <AlertCircle className="w-5 h-5 text-rose-ink shrink-0 mt-0.5" strokeWidth={1.75} aria-hidden="true" />,
   },
   success: {
-    border: 'border-emerald-200',
-    bg: 'bg-emerald-50',
-    text: 'text-emerald-950',
-    icon: <CheckCircle2 className="w-5 h-5 text-emerald-700 shrink-0 mt-0.5" aria-hidden="true" />,
+    surface: 'bg-aqua-wash border-aqua-deep/25 text-ink',
+    title: 'text-aqua-deep',
+    icon: <CheckCircle2 className="w-5 h-5 text-aqua-deep shrink-0 mt-0.5" strokeWidth={1.75} aria-hidden="true" />,
   },
 };
 
@@ -48,11 +44,11 @@ export const Alert: React.FC<AlertProps> = ({
   return (
     <div
       role="alert"
-      className={`border rounded-lg p-3.5 sm:p-4 flex gap-3 ${config.border} ${config.bg} ${config.text} ${className}`}
+      className={`border rounded-[10px] p-4 sm:p-5 flex gap-3.5 ${config.surface} ${className}`}
     >
       {config.icon}
-      <div className="flex-1 text-sm leading-relaxed">
-        {title && <p className="font-semibold mb-1 text-inherit">{title}</p>}
+      <div className="flex-1 text-[15px] leading-relaxed">
+        {title && <p className={`font-semibold mb-1 ${config.title}`}>{title}</p>}
         <div>{children}</div>
       </div>
     </div>

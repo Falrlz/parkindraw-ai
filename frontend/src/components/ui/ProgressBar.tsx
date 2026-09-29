@@ -5,21 +5,25 @@ export interface ProgressBarProps {
   label?: string;
   showPercentage?: boolean;
   color?: 'teal' | 'amber' | 'emerald' | 'rose';
+  /** Optional marker (0-100) drawn as a tick on the scale, e.g. the decision threshold. */
+  marker?: number;
   className?: string;
 }
 
 const colorStyles = {
-  teal: 'bg-teal-700',
-  amber: 'bg-amber-600',
-  emerald: 'bg-emerald-600',
-  rose: 'bg-rose-600',
+  teal: 'bg-iris',
+  amber: 'bg-amber-rule',
+  emerald: 'bg-aqua-rule',
+  rose: 'bg-rose-ink',
 };
 
+/** A measured scale: hairline track, filled rule, optional threshold tick. */
 export const ProgressBar: React.FC<ProgressBarProps> = ({
   value,
   label,
   showPercentage = true,
   color = 'teal',
+  marker,
   className = '',
 }) => {
   const clampedValue = Math.min(100, Math.max(0, value));
@@ -27,23 +31,32 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
   return (
     <div className={`w-full ${className}`}>
       {(label || showPercentage) && (
-        <div className="flex justify-between items-center mb-1.5 text-xs font-semibold text-slate-700">
+        <div className="flex justify-between items-baseline gap-3 mb-2 text-sm text-body">
           <span>{label}</span>
-          {showPercentage && <span>{clampedValue.toFixed(1)}%</span>}
+          {showPercentage && (
+            <span className="tabular font-medium text-ink">{clampedValue.toFixed(1)}%</span>
+          )}
         </div>
       )}
       <div
         role="progressbar"
-        aria-valuenow={clampedValue}
+        aria-valuenow={Number(clampedValue.toFixed(1))}
         aria-valuemin={0}
         aria-valuemax={100}
         aria-label={label || 'Progress bar'}
-        className="w-full h-2.5 bg-slate-200 rounded-full overflow-hidden"
+        className="relative w-full h-2 bg-line rounded-full"
       >
         <div
-          className={`h-full transition-all duration-300 ${colorStyles[color]}`}
+          className={`h-full rounded-full transition-[width] duration-700 ease-out ${colorStyles[color]}`}
           style={{ width: `${clampedValue}%` }}
         />
+        {marker !== undefined && (
+          <span
+            className="absolute -top-1.5 w-px h-5 bg-ink"
+            style={{ left: `${Math.min(100, Math.max(0, marker))}%` }}
+            aria-hidden="true"
+          />
+        )}
       </div>
     </div>
   );

@@ -12,17 +12,22 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 }
 
 const variantClasses: Record<ButtonVariant, string> = {
-  primary: 'bg-teal-700 text-white hover:bg-teal-800 border border-teal-700 disabled:bg-slate-300 disabled:border-slate-300 disabled:text-slate-500',
-  secondary: 'bg-slate-100 text-slate-800 hover:bg-slate-200 border border-slate-300 disabled:bg-slate-50 disabled:text-slate-400',
-  danger: 'bg-rose-700 text-white hover:bg-rose-800 border border-rose-700 disabled:bg-slate-300 disabled:border-slate-300',
-  outline: 'bg-transparent text-slate-700 hover:bg-slate-100 border border-slate-300 disabled:text-slate-400 disabled:border-slate-200',
-  ghost: 'bg-transparent text-slate-700 hover:bg-slate-100 border border-transparent disabled:text-slate-400',
+  primary:
+    'bg-iris text-on-iris border border-iris hover:bg-iris-deep hover:border-iris-deep active:bg-ink-fill active:border-ink-fill active:text-white disabled:bg-line disabled:border-line disabled:text-muted',
+  secondary:
+    'bg-iris-wash text-ink border border-transparent hover:bg-lilac/40 disabled:bg-ground disabled:text-muted',
+  danger:
+    'bg-rose-ink text-on-iris border border-rose-ink hover:opacity-90 disabled:bg-line disabled:border-line disabled:text-muted',
+  outline:
+    'bg-paper text-iris border border-iris hover:bg-iris-wash active:border-ink active:text-ink disabled:text-muted disabled:border-line disabled:bg-paper',
+  ghost:
+    'bg-transparent text-ink border border-transparent hover:bg-iris-wash disabled:text-muted',
 };
 
 const sizeClasses: Record<ButtonSize, string> = {
-  sm: 'px-3 py-1.5 text-xs',
-  md: 'px-4 py-2 text-sm',
-  lg: 'px-5 py-2.5 text-base font-semibold',
+  sm: 'min-h-10 px-3.5 text-sm',
+  md: 'min-h-12 px-5 text-[15px]',
+  lg: 'min-h-14 px-7 text-base',
 };
 
 export const Button: React.FC<ButtonProps> = ({
@@ -40,7 +45,8 @@ export const Button: React.FC<ButtonProps> = ({
     <button
       {...props}
       disabled={disabled || isLoading}
-      className={`inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-colors cursor-pointer disabled:cursor-not-allowed ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}
+      aria-busy={isLoading || undefined}
+      className={`group/btn inline-flex items-center justify-center gap-2.5 rounded-md font-medium tracking-[-0.005em] transition-[background-color,border-color,color,transform] duration-200 ease-out cursor-pointer active:translate-y-px disabled:cursor-not-allowed disabled:active:translate-y-0 ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}
     >
       {isLoading ? (
         <span className="inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" aria-hidden="true" />
@@ -48,7 +54,11 @@ export const Button: React.FC<ButtonProps> = ({
         leftIcon
       )}
       <span>{children}</span>
-      {!isLoading && rightIcon}
+      {!isLoading && rightIcon && (
+        <span className="inline-flex transition-transform duration-200 ease-out group-hover/btn:translate-x-0.5">
+          {rightIcon}
+        </span>
+      )}
     </button>
   );
 };

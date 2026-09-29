@@ -1,6 +1,7 @@
 import React from 'react';
 import { Info } from 'lucide-react';
 import type { StepInstructionContent } from '../../../content/types';
+import { Medallion } from '../../../components/brand/Medallion';
 
 export interface DrawingInstructionsProps {
   instruction: StepInstructionContent;
@@ -8,27 +9,25 @@ export interface DrawingInstructionsProps {
 
 export const DrawingInstructions: React.FC<DrawingInstructionsProps> = ({ instruction }) => {
   return (
-    <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 sm:p-5 mb-5 text-slate-800">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-2">
-        <p className="text-xs font-bold uppercase tracking-wider text-teal-800">
-          {instruction.category}
-        </p>
-        <span className="text-xs text-slate-500 font-medium">
-          Format: Citra Kanvas Kontras Tinggi
-        </span>
-      </div>
+    <div className="text-ink">
+      <Medallion
+        pattern={instruction.modality}
+        className="w-24 sm:w-28 short:w-16 tight:hidden text-ink mb-8 short:mb-4"
+      />
 
-      <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-2">
+      <h2 className="text-4xl sm:text-5xl short:text-4xl font-medium tracking-[-0.03em] leading-[1.05]">
         {instruction.title}
       </h2>
 
-      <p className="text-sm sm:text-base text-slate-700 leading-relaxed mb-3">
+      <p className="mt-5 short:mt-3 text-lg sm:text-xl short:text-lg text-body leading-relaxed max-w-[48ch]">
         {instruction.instructionText}
       </p>
 
-      <div className="flex items-start gap-2 text-xs text-slate-600 bg-white p-2.5 rounded-lg border border-slate-200">
-        <Info className="w-4 h-4 text-teal-700 shrink-0 mt-0.5" aria-hidden="true" />
-        <span><strong>Tips:</strong> {instruction.canvasTip}</span>
+      <div className="mt-8 pt-5 short:mt-4 short:pt-3 border-t border-line flex items-start gap-3 text-base text-body leading-relaxed">
+        <Info className="w-5 h-5 text-iris shrink-0 mt-0.5" strokeWidth={1.75} aria-hidden="true" />
+        <span>
+          <strong className="font-semibold text-ink">Tips:</strong> {instruction.canvasTip}
+        </span>
       </div>
     </div>
   );

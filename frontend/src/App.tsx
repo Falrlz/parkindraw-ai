@@ -1,5 +1,6 @@
 import React from 'react';
 import { RouteProvider, useRoute } from './app/AppRouter';
+import { ThemeProvider } from './app/ThemeProvider';
 import { RootLayout } from './app/layouts/RootLayout';
 import { HomePage } from './pages/HomePage';
 import { ScreeningPage } from './pages/ScreeningPage';
@@ -25,8 +26,10 @@ const AppContent: React.FC = () => {
 
 export default function App() {
   return (
-    <RouteProvider>
-      <AppContent />
-    </RouteProvider>
+    <ThemeProvider>
+      <RouteProvider>
+        <AppContent />
+      </RouteProvider>
+    </ThemeProvider>
   );
 }
