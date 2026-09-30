@@ -80,47 +80,68 @@ Individual modality probabilities are aggregated using late fusion to calculate 
 
 ```text
 parkindraw-ai/
-├── frontend/                       # Interactive clinical web application
+├── frontend/                       # Interactive clinical web application (React 19 + Vite)
 │   ├── public/                     # Static public assets
-│   ├── src/
-│   │   ├── app/                    # Layouts, client router, & Theme/Locale context providers
-│   │   ├── components/             # Reusable design system primitives & shared components (Navbar, Footer)
-│   │   ├── content/                # Decoupled bilingual copy (id/en) for all page views
-│   │   ├── features/               # Feature modules (Screening wizard, HTML5 canvas, report cards)
-│   │   ├── pages/                  # Page views (HomePage, ScreeningPage, AboutPage)
-│   │   └── services/               # Axios API client & backend DTO interfaces
-│   ├── package.json                # Frontend dependencies & npm scripts
-│   └── vite.config.ts              # Vite configuration & backend proxy routing
+│   └── src/                        # Frontend application source code
+│       ├── app/                    # Routing, global providers, and layout shells
+│       │   └── layouts/            # Application layout shells (RootLayout)
+│       ├── assets/                 # Brand assets, logos, and visual media
+│       ├── components/             # Reusable UI component library
+│       │   ├── shared/             # Shared layout & navigation components (Navbar, Footer)
+│       │   └── ui/                 # Design system primitives (Button, Card, Badge, Modal)
+│       ├── content/                # Decoupled bilingual copy & clinical text (id/en)
+│       ├── features/               # Feature-driven domain modules
+│       │   ├── about/              # Methodology, model specifications, & transparency
+│       │   │   └── components/     # About page presentation components
+│       │   ├── faq/                # FAQ categories and educational content
+│       │   │   └── components/     # FAQ accordion presentation components
+│       │   └── screening/          # Core neuromotor drawing screening workflow
+│       │       ├── components/     # Canvas, toolbar, wizard, scale, and report cards
+│       │       ├── hooks/          # Drawing logic & screening state machine hooks
+│       │       └── types/          # Screening domain models & types
+│       ├── hooks/                  # Global custom React hooks (useBackendHealth)
+│       ├── pages/                  # Top-level page views (Home, Screening, About)
+│       ├── services/               # Axios API client, endpoints, and DTO interfaces
+│       └── types/                  # Global navigation and application types
 │
-├── backend/                        # FastAPI REST API & model serving engine
-│   ├── app/
-│   │   ├── api/v1/endpoints/       # Health checks, prediction endpoints, & model info
-│   │   ├── core/                   # Application settings, CORS, & structured logging
-│   │   ├── schemas/                # Pydantic validation models & response schemas
-│   │   ├── services/               # Model loading, in-memory Pillow processing, predictor, & late fusion
-│   │   └── main.py                 # FastAPI application factory & lifespan manager
-│   ├── tests/                      # Automated API integration & unit tests (pytest + httpx)
-│   ├── pyproject.toml              # Python dependencies & project configuration
-│   └── main.py                     # Development server entrypoint script
+├── backend/                        # High-performance asynchronous REST API (FastAPI)
+│   ├── app/                        # Backend application source code
+│   │   ├── api/                    # Versioned API router and route controllers
+│   │   │   └── v1/                 # API version 1 module
+│   │   │       └── endpoints/      # Endpoint handlers (health, prediction, models)
+│   │   ├── core/                   # App configurations, CORS policies, & structured logging
+│   │   ├── schemas/                # Pydantic validation schemas & response DTOs
+│   │   └── services/               # Model loader, image processor, predictor, & late fusion
+│   └── tests/                      # Automated API integration and unit test suite
 │
-├── ml/                             # Machine learning research & training pipeline
-│   ├── configs/                    # Training hyperparameter configurations (resnet18.yaml)
-│   ├── data/
-│   │   ├── raw/                    # Raw NewHandPD drawing archives (Circle, Meander, Spiral)
+├── ml/                             # Machine learning research and training pipeline
+│   ├── assets/                     # Tracked publication figures and visual assets
+│   │   └── figures/                # Multi-modality confusion matrices & learning curves
+│   ├── artifacts/                  # Consolidated runtime outputs (git-ignored)
+│   │   ├── models/                 # Model weight checkpoints (resnet18_{modality}.pt)
+│   │   ├── reports/                # Evaluation metric tables & clinical summaries
+│   │   └── tracking/               # SQLite MLflow experiment database
+│   ├── configs/                    # Training hyperparameter configurations
+│   │   └── experiments/            # Model optimization configs (resnet18.yaml)
+│   ├── data/                       # Dataset storage and split partitions
+│   │   ├── raw/                    # Raw NewHandPD digitized drawing archives
 │   │   └── splits/                 # Cluster-stratified master manifest (master_manifest.csv)
 │   ├── notebooks/                  # Exploratory Data Analysis (EDA) notebooks
 │   ├── pipelines/                  # End-to-end pipeline stages (preparation, train, evaluate)
-│   ├── src/                        # Modular preprocessing, augmentation, ResNet-18, & evaluation
-│   ├── artifacts/                  # Serialized weights, evaluation figures, & MLflow database
-│   ├── tests/                      # Automated pipeline test suite (pytest)
-│   └── pyproject.toml              # ML dependencies & uv environment lockfile
+│   ├── src/                        # Modular architecture components
+│   │   ├── config/                 # Schemas, directories, and configuration loaders
+│   │   ├── data/                   # Anomaly resolution, SHA-256 clustering, manifest generator
+│   │   ├── evaluation/             # Metrics calculation (ROC-AUC, F1), confusion matrices
+│   │   ├── models/                 # Frozen ResNet-18 architecture and serialization
+│   │   ├── preprocessing/          # Affine augmentations, PyTorch transforms, DrawingDataset
+│   │   ├── tracking/               # SQLite MLflow experiment tracker adapter
+│   │   ├── training/               # Generic PyTorch training engine, early stopping, & trainer
+│   │   └── utils/                  # Standardized system logger
+│   └── tests/                      # Automated pipeline unit and integration test suite
 │
-├── infra/                          # Cloud infrastructure, containerization, & CI/CD deployment (planned)
-│   ├── docker/                     # Multi-stage Dockerfiles for backend and frontend (planned)
-│   └── compose/                    # Multi-container orchestration configurations (planned)
-│
-├── docs/                           # Architecture specifications & project documentation
-├── research/                       # Biomedical literature review & dataset notes
+├── infra/                          # Containerization, deployment configs, and cloud monitoring (planned)
+├── docs/                           # Architecture specifications and technical documentation
+├── research/                       # Biomedical literature review and dataset notes
 └── README.md                       # Master monorepo documentation
 ```
 
@@ -147,12 +168,6 @@ The machine learning pipeline handles dataset processing, model training, and ex
 - **Transfer Learning with ResNet-18**: Uses pre-trained ResNet-18 feature extractors with custom classification heads, trained using AdamW, early stopping, and ReduceLROnPlateau scheduling.
 - **Stroke-Preserving Augmentation**: Applies mild affine adjustments (rotation within $\pm 5.0^\circ$, translation within $\pm 4\%$, scaling $0.95 - 1.05$) with paper-white borders, avoiding horizontal or vertical flips to maintain stroke trajectory.
 - **Experiment Tracking**: Logs training metrics, validation curves, and model checkpoints to a local SQLite-backed MLflow server.
-
-### 4. Infrastructure & Deployment (`infra/` - Planned)
-Designed for upcoming production containerization and deployment workflows:
-- **Containerized Serving**: Multi-stage Dockerfiles for packaging the FastAPI backend service and building the static frontend distribution via Nginx.
-- **Service Orchestration**: Docker Compose configurations to orchestrate frontend, backend, and the MLflow experiment database within an isolated network.
-- **CI/CD Quality Gates**: Automated continuous integration workflows for running lint checks, static type audits, and test suites across all sub-projects.
 
 ---
 
