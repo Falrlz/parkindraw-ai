@@ -21,10 +21,10 @@ Have you ever wondered if subtle changes in handwriting, minor hand tremors, or 
 ## Preview
 
 ### Dashboard
-![Dashboard](.github/assets/preview-dashboard.gif)
+![Dashboard](.github/assets/parkindraw-home.gif)
 
 ### Interactive Screening
-![Interactive Screening](.github/assets/preview-screening.gif)
+![Interactive Screening](.github/assets/parkindraw-screening.gif)
 
 ---
 
