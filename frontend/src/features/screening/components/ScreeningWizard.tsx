@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, ArrowRight, Printer, RefreshCw, PenTool, UploadCloud } from 'lucide-react';
 import type { DrawingModality } from '../../../services/types';
+import { useLocale, useLocalized } from '../../../app/localeContext';
 import { screeningContent } from '../../../content/screening.content';
 import { useScreeningSession } from '../hooks/useScreeningSession';
 import type { InputMode } from '../types';
@@ -49,7 +50,8 @@ export const ScreeningWizard: React.FC<ScreeningWizardProps> = ({ header }) => {
     if (hasReport) window.scrollTo({ top: 0 });
   }, [hasReport]);
 
-  const { preparation, steps } = screeningContent;
+  const { locale } = useLocale();
+  const { preparation, steps, wizard, report } = useLocalized(screeningContent);
   const currentModality = modalityKeys[state.currentStep];
   const currentInstruction = currentModality ? steps[currentModality] : null;
 
@@ -64,9 +66,7 @@ export const ScreeningWizard: React.FC<ScreeningWizardProps> = ({ header }) => {
       const exportResult = await canvasRef.current.exportDrawing();
 
       if (!exportResult || !canvasRef.current.hasDrawn) {
-        setValidationError(
-          'Harap buat goresan pada kanvas sebelum melanjutkan ke tahap berikutnya.'
-        );
+        setValidationError(wizard.validation.drawRequired);
         return;
       }
 
@@ -80,7 +80,7 @@ export const ScreeningWizard: React.FC<ScreeningWizardProps> = ({ header }) => {
     } else {
       const existing = state.drawings[currentModality];
       if (!existing.blob || !existing.thumbnailUrl) {
-        setValidationError('Harap pilih berkas foto gambar terlebih dahulu.');
+        setValidationError(wizard.validation.fileRequired);
         return;
       }
     }
@@ -128,7 +128,7 @@ export const ScreeningWizard: React.FC<ScreeningWizardProps> = ({ header }) => {
             </Button>
           </div>
 
-          <ol className="col-span-12 lg:col-span-6 lg:col-start-7 border-t border-ink/80" aria-label="Instruksi Persiapan">
+          <ol className="col-span-12 lg:col-span-6 lg:col-start-7 border-t border-ink/80" aria-label={preparation.instructionsLabel ?? 'Instruksi Persiapan'}>
             {preparation.guidelines.map((text, idx) => (
               <li key={idx} className="flex items-start gap-5 py-5 sm:py-6 short:py-2.5 border-b border-line">
                 <span className="tabular w-8 shrink-0 text-2xl font-medium tracking-[-0.03em] text-iris leading-none pt-0.5">
@@ -167,19 +167,19 @@ export const ScreeningWizard: React.FC<ScreeningWizardProps> = ({ header }) => {
         <header className="mb-10 short:mb-6 flex flex-wrap items-end justify-between gap-x-8 gap-y-3">
           <div>
             <h2 className="text-4xl sm:text-5xl short:text-4xl font-medium tracking-[-0.03em] leading-[1.05] text-ink">
-              Laporan Skrining Pola Parkinson
+              {report.title}
             </h2>
-            <p className="mt-3 short:mt-2 text-lg sm:text-xl short:text-lg text-body">Hasil Evaluasi Karakteristik Goresan</p>
+            <p className="mt-3 short:mt-2 text-lg sm:text-xl short:text-lg text-body">{report.subtitle}</p>
           </div>
           {/* Document meta, set as plain text so it prints and reads as a record */}
           <dl className="flex flex-wrap gap-x-6 gap-y-1 text-sm text-muted tabular">
             <div className="flex gap-1.5">
-              <dt>ID Sesi:</dt>
+              <dt>{report.metaLabels.sessionId}:</dt>
               <dd className="text-ink">{state.result.session_id}</dd>
             </div>
             <div className="flex gap-1.5">
-              <dt>Waktu Selesai:</dt>
-              <dd className="text-ink">{new Date(state.result.timestamp).toLocaleString('id-ID')}</dd>
+              <dt>{report.metaLabels.completedAt}:</dt>
+              <dd className="text-ink">{new Date(state.result.timestamp).toLocaleString(locale === 'en' ? 'en-US' : 'id-ID')}</dd>
             </div>
           </dl>
         </header>
@@ -199,7 +199,7 @@ export const ScreeningWizard: React.FC<ScreeningWizardProps> = ({ header }) => {
             leftIcon={<RefreshCw className="w-4 h-4 shrink-0" />}
             className="!px-4 sm:!px-6 leading-tight"
           >
-            Lakukan Skrining Baru
+            {report.actions.restart}
           </Button>
 
           <Button
@@ -210,7 +210,7 @@ export const ScreeningWizard: React.FC<ScreeningWizardProps> = ({ header }) => {
             leftIcon={<Printer className="w-4 h-4 shrink-0" />}
             className="!px-4 sm:!px-6 leading-tight"
           >
-            Cetak / Simpan Laporan (PDF)
+            {report.actions.printPdf}
           </Button>
         </div>
       </div>
@@ -238,12 +238,12 @@ export const ScreeningWizard: React.FC<ScreeningWizardProps> = ({ header }) => {
               tabs={[
                 {
                   id: 'canvas',
-                  label: 'Kanvas Digital',
+                  label: wizard.inputModes.canvas,
                   icon: <PenTool className="w-4 h-4" aria-hidden="true" />,
                 },
                 {
                   id: 'upload',
-                  label: 'Unggah Foto Kertas',
+                  label: wizard.inputModes.upload,
                   icon: <UploadCloud className="w-4 h-4" aria-hidden="true" />,
                 },
               ]}
@@ -271,7 +271,7 @@ export const ScreeningWizard: React.FC<ScreeningWizardProps> = ({ header }) => {
 
           {(validationError || state.error) && (
             <div className="mt-5">
-              <Alert type="error" title="Perhatian">
+              <Alert type="error" title={wizard.validation.alertTitle}>
                 {validationError || state.error}
               </Alert>
             </div>
@@ -280,7 +280,7 @@ export const ScreeningWizard: React.FC<ScreeningWizardProps> = ({ header }) => {
 
         {/* Step navigation: under the workspace on phones, under the instructions on laptops */}
         <nav
-          aria-label="Navigasi Tahapan"
+          aria-label={wizard.navigationLabel ?? wizard.progressLabel}
           className="col-span-12 lg:col-span-5 lg:row-start-2 lg:self-start flex flex-row items-center justify-between gap-3 pt-6 short:pt-4 border-t border-line"
         >
           {/* Back on the left, forward on the right, always on one row */}
@@ -294,7 +294,7 @@ export const ScreeningWizard: React.FC<ScreeningWizardProps> = ({ header }) => {
               className="shrink-0 !px-4 sm:!px-5"
             >
               {/* Icon-only on phones so the forward action keeps a single line */}
-              <span className="sr-only sm:not-sr-only">Kembali</span>
+              <span className="sr-only sm:not-sr-only">{wizard.backButton}</span>
             </Button>
           ) : (
             <span aria-hidden="true" />
@@ -309,8 +309,8 @@ export const ScreeningWizard: React.FC<ScreeningWizardProps> = ({ header }) => {
             className="flex-1 sm:flex-none min-w-0 !px-4 sm:!px-5 text-[15px] sm:text-base leading-tight"
           >
             {state.currentStep === 3
-              ? 'Kirim & Analisis Seluruh Gambar'
-              : 'Lanjut ke Pola Berikutnya'}
+              ? wizard.submitButton
+              : wizard.nextPatternButton}
           </Button>
         </nav>
       </div>

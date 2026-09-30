@@ -1,5 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { Upload, FileImage, X } from 'lucide-react';
+import { useLocalized } from '../../../app/localeContext';
+import { screeningContent } from '../../../content/screening.content';
 import { Button } from '../../../components/ui/Button';
 
 export interface FileUploadDropzoneProps {
@@ -15,6 +17,7 @@ export const FileUploadDropzone: React.FC<FileUploadDropzoneProps> = ({
   selectedPreviewUrl,
   className = '',
 }) => {
+  const { upload } = useLocalized(screeningContent);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -22,12 +25,12 @@ export const FileUploadDropzone: React.FC<FileUploadDropzoneProps> = ({
   const processFile = (file: File) => {
     const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
     if (!validTypes.includes(file.type)) {
-      setError('Format berkas tidak didukung. Harap pilih gambar PNG, JPG, atau WebP.');
+      setError(upload.invalidType);
       return;
     }
 
     if (file.size > 10 * 1024 * 1024) {
-      setError('Ukuran berkas terlalu besar (maksimal 10 MB).');
+      setError(upload.fileTooLarge);
       return;
     }
 
@@ -62,7 +65,7 @@ export const FileUploadDropzone: React.FC<FileUploadDropzoneProps> = ({
         accept="image/png, image/jpeg, image/jpg, image/webp"
         onChange={handleInputChange}
         className="hidden"
-        aria-label="Pilih berkas gambar untuk diunggah"
+        aria-label={upload.chooseFileButton}
       />
 
       {selectedPreviewUrl ? (
@@ -71,7 +74,7 @@ export const FileUploadDropzone: React.FC<FileUploadDropzoneProps> = ({
             <div className="w-full aspect-square max-w-[560px] lg:max-w-[min(560px,max(260px,calc(100svh_-_280px)))] mx-auto bg-white border border-line-strong rounded-[10px] overflow-hidden flex items-center justify-center">
               <img
                 src={selectedPreviewUrl}
-                alt="Pratinjau berkas yang diunggah"
+                alt={upload.previewAlt}
                 className="max-w-full max-h-full object-contain"
               />
             </div>
@@ -80,7 +83,7 @@ export const FileUploadDropzone: React.FC<FileUploadDropzoneProps> = ({
           <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
             <span className="text-sm text-aqua-deep font-medium flex items-center gap-2">
               <FileImage className="w-4 h-4" aria-hidden="true" />
-              Berkas siap diproses
+              {upload.fileReadyText}
             </span>
             <Button
               type="button"
@@ -89,7 +92,7 @@ export const FileUploadDropzone: React.FC<FileUploadDropzoneProps> = ({
               onClick={onClear}
               leftIcon={<X className="w-4 h-4" />}
             >
-              Ganti Berkas
+              {upload.changeFileButton}
             </Button>
           </div>
         </div>
@@ -122,14 +125,14 @@ export const FileUploadDropzone: React.FC<FileUploadDropzoneProps> = ({
             </span>
 
             <p className="font-medium text-ink text-lg max-w-[24ch]">
-              Klik untuk memilih foto atau seret berkas ke sini
+              {upload.dropzoneTitle}
             </p>
             <p className="mt-2 text-sm text-body max-w-[34ch] leading-relaxed">
-              Foto hasil gambar pada kertas putih polos. Format yang didukung: PNG, JPG, atau WebP (maks. 10 MB).
+              {upload.dropzoneDesc}
             </p>
 
             <span className="mt-6 inline-flex items-center min-h-11 px-5 rounded-md border border-iris text-iris text-[15px] font-medium">
-              Pilih Foto Kertas
+              {upload.chooseFileButton}
             </span>
 
             {error && (

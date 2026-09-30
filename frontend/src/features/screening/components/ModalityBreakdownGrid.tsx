@@ -1,17 +1,13 @@
 import React from 'react';
 import type { SessionPredictionResponse, DrawingModality } from '../../../services/types';
+import { useLocalized } from '../../../app/localeContext';
+import { screeningContent } from '../../../content/screening.content';
 import { Medallion } from '../../../components/brand/Medallion';
 
 export interface ModalityBreakdownGridProps {
   result: SessionPredictionResponse;
   thumbnails: Record<DrawingModality, string | null>;
 }
-
-const modalityMeta: Record<DrawingModality, { title: string; category: string }> = {
-  circle: { title: 'Lingkaran', category: 'Pola Melingkar' },
-  meander: { title: 'Berkelok', category: 'Pola Siku Berkelok' },
-  spiral: { title: 'Spiral', category: 'Pola Berkelanjutan' },
-};
 
 /**
  * The three specimens as a register, the same grammar as "Tiga Pola" on the
@@ -21,18 +17,19 @@ export const ModalityBreakdownGrid: React.FC<ModalityBreakdownGridProps> = ({
   result,
   thumbnails,
 }) => {
+  const { report, steps } = useLocalized(screeningContent);
   const modalities: DrawingModality[] = ['circle', 'meander', 'spiral'];
 
   return (
     <section className="pt-10 short:pt-8">
       <h3 className="text-3xl sm:text-4xl short:text-3xl font-medium tracking-[-0.03em] leading-[1.1] text-ink">
-        Rincian Analisis Per Modalitas Gambar
+        {report.breakdownHeading}
       </h3>
 
       <ul className="mt-6 border-t border-ink/80">
         {modalities.map((modality) => {
           const prediction = result.drawings[modality];
-          const meta = modalityMeta[modality];
+          const meta = steps[modality];
           const isParkinson = prediction.prediction === 'Parkinson';
           const parkinsonProb = prediction.probabilities.Parkinson * 100;
           const thumbnail = thumbnails[modality];
@@ -57,7 +54,7 @@ export const ModalityBreakdownGrid: React.FC<ModalityBreakdownGridProps> = ({
                       className={`w-2 h-2 rounded-full shrink-0 ${isParkinson ? 'bg-amber-rule' : 'bg-aqua-rule'}`}
                       aria-hidden="true"
                     />
-                    {isParkinson ? 'Terindikasi' : 'Rendah Risiko'}
+                    {isParkinson ? report.statusLabels.parkinsonShort : report.statusLabels.healthyShort}
                   </p>
                 </div>
               </div>
@@ -66,15 +63,15 @@ export const ModalityBreakdownGrid: React.FC<ModalityBreakdownGridProps> = ({
               <div className="col-span-5 sm:col-span-3 mt-4 sm:mt-0 pl-[60px] sm:pl-0">
                 <div className="w-20 sm:w-24 aspect-square bg-white border border-line-strong rounded-md overflow-hidden flex items-center justify-center">
                   {thumbnail ? (
-                    <img src={thumbnail} alt={`Goresan ${meta.title}`} className="max-w-full max-h-full object-contain" />
+                    <img src={thumbnail} alt={meta.title} className="max-w-full max-h-full object-contain" />
                   ) : (
-                    <span className="text-xs text-muted text-center px-1">Tidak ada gambar</span>
+                    <span className="text-xs text-muted text-center px-1">{report.noImageText}</span>
                   )}
                 </div>
               </div>
 
               <div className="col-span-7 sm:col-span-3 mt-4 sm:mt-0 text-right">
-                <p className="text-sm text-muted">Skor Probabilitas Parkinson</p>
+                <p className="text-sm text-muted">{report.scoreLabel}</p>
                 <p className="text-2xl sm:text-3xl font-medium tracking-[-0.03em] text-ink tabular">
                   {parkinsonProb.toFixed(1)}%
                 </p>

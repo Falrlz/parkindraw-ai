@@ -1,14 +1,15 @@
 import React from 'react';
+import { useLocalized } from '../../../app/localeContext';
 import { aboutContent } from '../../../content/about.content';
 import { Chapter } from './Chapter';
 
 export const BenchmarkMetricsTable: React.FC = () => {
-  const { modelMetadata } = aboutContent;
+  const { modelMetadata } = useLocalized(aboutContent);
 
   return (
     <Chapter
       heading={modelMetadata.benchmarkHeading}
-      subline="Evaluasi Partisi Pasien Terisolasi (Locked Partition)"
+      subline={modelMetadata.benchmarkSubline}
     >
       <p className="text-lg sm:text-xl short:text-[17px] text-body leading-relaxed max-w-[62ch]">{modelMetadata.benchmarkDescription}</p>
 
@@ -17,11 +18,11 @@ export const BenchmarkMetricsTable: React.FC = () => {
         {modelMetadata.benchmarkMetrics.map((row, idx) => {
           const isMacro = row.modality.includes('Macro');
           const cells: [string, string, boolean][] = [
-            ['Sensitivitas (Recall)', row.recall, true],
-            ['ROC-AUC', row.rocAuc, true],
-            ['Akurasi', row.accuracy, false],
-            ['Presisi', row.precision, false],
-            ['F1-Score', row.f1Score, false],
+            [modelMetadata.tableHeaders.recall, row.recall, true],
+            [modelMetadata.tableHeaders.rocAuc, row.rocAuc, true],
+            [modelMetadata.tableHeaders.accuracy, row.accuracy, false],
+            [modelMetadata.tableHeaders.precision, row.precision, false],
+            [modelMetadata.tableHeaders.f1Score, row.f1Score, false],
           ];
           return (
             <li key={idx} className={`py-5 border-b border-line ${isMacro ? 'bg-iris-wash -mx-5 px-5' : ''}`}>
@@ -45,12 +46,12 @@ export const BenchmarkMetricsTable: React.FC = () => {
           <caption className="sr-only">{modelMetadata.benchmarkHeading}</caption>
           <thead>
             <tr className="border-b border-ink/80 text-sm text-muted">
-              <th scope="col" className="py-3 pl-3 pr-4 font-normal">Modalitas Uji</th>
-              <th scope="col" className="py-3 px-3 font-normal text-right">Accuracy</th>
-              <th scope="col" className="py-3 px-3 font-normal text-right">Precision</th>
-              <th scope="col" className="py-3 px-3 font-medium text-right text-iris">Recall</th>
-              <th scope="col" className="py-3 px-3 font-normal text-right">F1-Score</th>
-              <th scope="col" className="py-3 px-3 font-medium text-right text-iris">ROC-AUC</th>
+              <th scope="col" className="py-3 pl-3 pr-4 font-normal">{modelMetadata.tableHeaders.modality}</th>
+              <th scope="col" className="py-3 px-3 font-normal text-right">{modelMetadata.tableHeaders.accuracy}</th>
+              <th scope="col" className="py-3 px-3 font-normal text-right">{modelMetadata.tableHeaders.precision}</th>
+              <th scope="col" className="py-3 px-3 font-medium text-right text-iris">{modelMetadata.tableHeaders.recall}</th>
+              <th scope="col" className="py-3 px-3 font-normal text-right">{modelMetadata.tableHeaders.f1Score}</th>
+              <th scope="col" className="py-3 px-3 font-medium text-right text-iris">{modelMetadata.tableHeaders.rocAuc}</th>
             </tr>
           </thead>
           <tbody className="tabular text-ink">

@@ -15,6 +15,15 @@ export const uiContent: Localized<UiContent> = {
       mobileLabel: 'Menu Navigasi Mobile',
       openMenu: 'Buka menu navigasi',
       closeMenu: 'Tutup menu navigasi',
+      skipToContent: 'Lewati ke Konten Utama',
+    },
+    common: {
+      openInNewTab: '(membuka tab baru)',
+    },
+    backendStatus: {
+      checking: 'Memeriksa Sistem...',
+      online: 'Backend Online',
+      offline: 'Backend Offline',
     },
   },
   en: {
@@ -29,6 +38,15 @@ export const uiContent: Localized<UiContent> = {
       mobileLabel: 'Mobile navigation menu',
       openMenu: 'Open navigation menu',
       closeMenu: 'Close navigation menu',
+      skipToContent: 'Skip to main content',
+    },
+    common: {
+      openInNewTab: '(opens in a new tab)',
+    },
+    backendStatus: {
+      checking: 'Checking System...',
+      online: 'Backend Online',
+      offline: 'Backend Offline',
     },
   },
 };

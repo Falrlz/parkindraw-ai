@@ -25,7 +25,7 @@ export const navigationContent: Localized<NavigationContent> = {
   en: {
     brand: {
       title: 'Parkindraw',
-      tagline: 'Clinical Screening',
+      tagline: 'Draw. Analyze. Screen.',
     },
     menuItems: [
       { id: 'home', label: 'Home', path: '/' },

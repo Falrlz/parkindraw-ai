@@ -1,6 +1,8 @@
 import { useState, useCallback } from 'react';
 import type { DrawingModality } from '../../../services/types';
 import { predictScreeningSession } from '../../../services/api';
+import { useLocalized } from '../../../app/localeContext';
+import { screeningContent } from '../../../content/screening.content';
 import type { ScreeningSessionState, ScreeningStep, InputMode } from '../types';
 
 const initialDrawingsState = {
@@ -10,6 +12,7 @@ const initialDrawingsState = {
 };
 
 export function useScreeningSession() {
+  const { wizard } = useLocalized(screeningContent);
   const [state, setState] = useState<ScreeningSessionState>({
     currentStep: 0,
     drawings: initialDrawingsState,
@@ -60,7 +63,7 @@ export function useScreeningSession() {
     if (!circle.blob || !meander.blob || !spiral.blob) {
       setState((prev) => ({
         ...prev,
-        error: 'Harap selesaikan ketiga pola gambar (Lingkaran, Berkelok, dan Spiral) terlebih dahulu.',
+        error: wizard.validation.allStepsRequired,
       }));
       return;
     }
@@ -87,10 +90,10 @@ export function useScreeningSession() {
         error:
           err instanceof Error
             ? err.message
-            : 'Gagal menganalisis sesi skrining. Pastikan backend aktif dan coba lagi.',
+            : wizard.validation.analysisFailed,
       }));
     }
-  }, [state.drawings]);
+  }, [state.drawings, wizard.validation.allStepsRequired, wizard.validation.analysisFailed]);
 
   const resetSession = useCallback(() => {
     setState({

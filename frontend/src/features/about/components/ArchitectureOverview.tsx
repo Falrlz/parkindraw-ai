@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { useLocalized } from '../../../app/localeContext';
 import { aboutContent } from '../../../content/about.content';
 import { Chapter } from './Chapter';
 
@@ -7,20 +8,20 @@ const lede = 'text-lg sm:text-xl short:text-[17px] squat:text-base text-body lea
 
 /** First chapter: part of the page's opening screen, together with the page title. */
 export const TransferLearningChapter: React.FC<{ className?: string }> = ({ className = '' }) => {
-  const { aiRationale } = aboutContent;
+  const { aiRationale } = useLocalized(aboutContent);
 
   return (
-    <Chapter heading={aiRationale.heading} subline="Deep Residual Learning & Frozen Backbone" className={className}>
+    <Chapter heading={aiRationale.heading} subline={aiRationale.transferLearningSubline} className={className}>
       <p className={`${lede} max-w-[60ch]`}>{aiRationale.transferLearningText}</p>
     </Chapter>
   );
 };
 
 export const LateFusionChapter: React.FC = () => {
-  const { aiRationale } = aboutContent;
+  const { aiRationale } = useLocalized(aboutContent);
 
   return (
-    <Chapter heading={aiRationale.lateFusionHeading} subline="Penggabungan Probabilitas Independen">
+    <Chapter heading={aiRationale.lateFusionHeading} subline={aiRationale.lateFusionSubline}>
       <p className={`${lede} max-w-[62ch]`}>{aiRationale.lateFusionText}</p>
 
       <figure className="mt-8 rounded-[10px] bg-ink-fill text-white px-3 sm:px-10 py-6 sm:py-10">

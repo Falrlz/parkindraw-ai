@@ -1,6 +1,7 @@
 import React from 'react';
 import { ArrowRight } from 'lucide-react';
 import { useRoute } from '../app/AppRouter';
+import { useLocalized } from '../app/localeContext';
 import { homeContent } from '../content/home.content';
 import { faqContent } from '../content/faq.content';
 import { SectionContainer } from '../components/shared/SectionContainer';
@@ -10,7 +11,8 @@ import { FaqItem } from '../features/faq/components/FaqItem';
 
 export const HomePage: React.FC = () => {
   const { navigate } = useRoute();
-  const { hero, explanation, workflow, biomarkers, ctaBanner } = homeContent;
+  const { hero, explanation, workflow, biomarkers, ctaBanner } = useLocalized(homeContent);
+  const faq = useLocalized(faqContent);
 
   return (
     <div>
@@ -128,12 +130,12 @@ export const HomePage: React.FC = () => {
         <div className="grid grid-cols-12 gap-x-6 gap-y-10">
           <div className="col-span-12 lg:col-span-4">
             <h2 className="lg:sticky lg:top-28 text-4xl sm:text-5xl font-medium tracking-[-0.03em] leading-[1.05] text-ink max-w-[14ch]">
-              {faqContent.heading}
+              {faq.heading}
             </h2>
           </div>
           <div className="col-span-12 lg:col-span-8 border-t border-ink/80">
-            {faqContent.items.map((faq) => (
-              <FaqItem key={faq.id} item={faq} />
+            {faq.items.map((item) => (
+              <FaqItem key={item.id} item={item} />
             ))}
           </div>
         </div>

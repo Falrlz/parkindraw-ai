@@ -1,5 +1,7 @@
 import React from 'react';
 import { RotateCcw, Trash2, Eye, EyeOff } from 'lucide-react';
+import { useLocalized } from '../../../app/localeContext';
+import { screeningContent } from '../../../content/screening.content';
 
 export interface CanvasToolbarProps {
   strokeWidth: number;
@@ -28,11 +30,13 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
   showWatermark,
   onToggleWatermark,
 }) => {
+  const { canvas } = useLocalized(screeningContent);
+
   return (
     <div className="flex flex-col gap-3 lg:gap-5 tight:gap-3 lg:w-44 lg:shrink-0">
       {/* Stroke Width Selector */}
-      <div className="flex items-center lg:items-stretch lg:flex-col gap-3 lg:gap-2" role="group" aria-label="Ketebalan">
-        <span className="text-sm text-muted hidden sm:inline tight:hidden">Ketebalan:</span>
+      <div className="flex items-center lg:items-stretch lg:flex-col gap-3 lg:gap-2" role="group" aria-label={canvas.strokeLabel}>
+        <span className="text-sm text-muted hidden sm:inline tight:hidden">{canvas.strokeLabel}:</span>
         <div className="grid grid-cols-3 lg:grid-cols-1 flex-1 p-1 bg-paper border border-line rounded-lg">
           {[2, 3, 5].map((width) => {
             const isActive = strokeWidth === width;
@@ -47,7 +51,7 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
                 <span className="w-3 flex justify-center" aria-hidden="true">
                   <span className="rounded-full bg-current" style={{ width: width + 3, height: width + 3 }} />
                 </span>
-                {width === 2 ? 'Tipis' : width === 3 ? 'Sedang' : 'Tebal'}
+                {width === 2 ? canvas.strokeOptions.thin : width === 3 ? canvas.strokeOptions.medium : canvas.strokeOptions.thick}
               </button>
             );
           })}
@@ -63,7 +67,7 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
           className={`${toolButton} text-body hover:text-ink hover:bg-paper text-center lg:text-left leading-tight`}
         >
           {showWatermark ? <EyeOff className="w-4 h-4 shrink-0" aria-hidden="true" /> : <Eye className="w-4 h-4 shrink-0" aria-hidden="true" />}
-          <span>{showWatermark ? 'Sembunyikan Panduan' : 'Lihat Panduan'}</span>
+          <span>{showWatermark ? canvas.hideGuide : canvas.showGuide}</span>
         </button>
 
         <button
@@ -73,7 +77,7 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
           className={`${toolButton} text-body hover:text-ink hover:bg-paper disabled:hover:bg-transparent`}
         >
           <RotateCcw className="w-4 h-4 shrink-0" aria-hidden="true" />
-          Urungkan
+          {canvas.undo}
         </button>
 
         <button
@@ -82,7 +86,7 @@ export const CanvasToolbar: React.FC<CanvasToolbarProps> = ({
           className={`${toolButton} text-rose-ink hover:bg-rose-wash`}
         >
           <Trash2 className="w-4 h-4 shrink-0" aria-hidden="true" />
-          Hapus
+          {canvas.clear}
         </button>
       </div>
     </div>

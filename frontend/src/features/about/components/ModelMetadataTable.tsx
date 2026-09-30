@@ -1,14 +1,15 @@
 import React from 'react';
+import { useLocalized } from '../../../app/localeContext';
 import { aboutContent } from '../../../content/about.content';
 import { Chapter } from './Chapter';
 
 export const ModelMetadataTable: React.FC = () => {
-  const { modelMetadata } = aboutContent;
+  const { modelMetadata } = useLocalized(aboutContent);
 
   return (
     <Chapter
       heading={modelMetadata.heading}
-      subline="Parameter Operasional Model Runtime"
+      subline={modelMetadata.subline}
     >
       <p className="text-lg sm:text-xl short:text-[17px] text-body leading-relaxed">{modelMetadata.description}</p>
 
@@ -16,8 +17,8 @@ export const ModelMetadataTable: React.FC = () => {
         <caption className="sr-only">{modelMetadata.heading}</caption>
         <thead className="sr-only">
           <tr>
-            <th scope="col">Parameter Arsitektur</th>
-            <th scope="col">Nilai Spesifikasi Teknis</th>
+            <th scope="col">{modelMetadata.parameterCol}</th>
+            <th scope="col">{modelMetadata.valueCol}</th>
           </tr>
         </thead>
         <tbody>

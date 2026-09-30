@@ -64,28 +64,90 @@ export interface StepInstructionContent {
   category: string;
   instructionText: string;
   canvasTip: string;
+  tipsLabel?: string;
 }
 
 export interface ScreeningContent {
+  pageTitle: string;
   preparation: {
     title: string;
     subtitle: string;
     guidelines: string[];
     startButtonText: string;
+    instructionsLabel?: string;
   };
   steps: Record<'circle' | 'meander' | 'spiral', StepInstructionContent>;
+  wizard: {
+    progressLabel: string;
+    navigationLabel: string;
+    inputModes: {
+      canvas: string;
+      upload: string;
+    };
+    backButton: string;
+    nextPatternButton: string;
+    submitButton: string;
+    validation: {
+      drawRequired: string;
+      fileRequired: string;
+      allStepsRequired: string;
+      analysisFailed: string;
+      alertTitle: string;
+    };
+  };
+  loading: {
+    title: string;
+    subtitle: string;
+    srText: string;
+  };
+  canvas: {
+    canvasAriaLabel: string;
+    strokeLabel: string;
+    strokeOptions: {
+      thin: string;
+      medium: string;
+      thick: string;
+    };
+    showGuide: string;
+    hideGuide: string;
+    undo: string;
+    clear: string;
+  };
+  upload: {
+    dropzoneTitle: string;
+    dropzoneDesc: string;
+    chooseFileButton: string;
+    changeFileButton: string;
+    fileReadyText: string;
+    previewAlt: string;
+    invalidType: string;
+    fileTooLarge: string;
+  };
   report: {
     title: string;
+    subtitle: string;
+    metaLabels: {
+      sessionId: string;
+      completedAt: string;
+    };
     statusLabels: {
       healthy: string;
+      healthyShort: string;
       healthyDesc: string;
       parkinson: string;
+      parkinsonShort: string;
       parkinsonDesc: string;
     };
+    finalVerdictLabel: string;
+    probabilityLabel: string;
     probabilityHeading: string;
+    thresholdLabel: string;
     breakdownHeading: string;
+    scoreLabel: string;
+    noImageText: string;
     disclaimerTitle: string;
     disclaimerBody: string;
+    followUpNotice: string;
     actions: {
       printPdf: string;
       restart: string;
@@ -125,17 +187,31 @@ export interface AboutContent {
   };
   aiRationale: {
     heading: string;
+    transferLearningSubline: string;
     transferLearningText: string;
     lateFusionHeading: string;
+    lateFusionSubline: string;
     lateFusionText: string;
     formulaText: string;
   };
   modelMetadata: {
     heading: string;
+    subline: string;
     description: string;
     parameters: ModelParameterRow[];
+    parameterCol: string;
+    valueCol: string;
     benchmarkHeading: string;
+    benchmarkSubline: string;
     benchmarkDescription: string;
+    tableHeaders: {
+      modality: string;
+      accuracy: string;
+      precision: string;
+      recall: string;
+      f1Score: string;
+      rocAuc: string;
+    };
     benchmarkMetrics: BenchmarkMetricRow[];
     recallNote: string;
   };
@@ -172,5 +248,14 @@ export interface UiContent {
     mobileLabel: string;
     openMenu: string;
     closeMenu: string;
+    skipToContent: string;
+  };
+  common: {
+    openInNewTab: string;
+  };
+  backendStatus: {
+    checking: string;
+    online: string;
+    offline: string;
   };
 }

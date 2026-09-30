@@ -2,6 +2,7 @@ import React from 'react';
 import { SectionContainer } from '../components/shared/SectionContainer';
 import { PageHeader } from '../components/shared/PageHeader';
 import { Ribbon } from '../components/brand/Ribbon';
+import { useLocalized } from '../app/localeContext';
 import { aboutContent } from '../content/about.content';
 import { TransferLearningChapter, LateFusionChapter } from '../features/about/components/ArchitectureOverview';
 import { ModelMetadataTable } from '../features/about/components/ModelMetadataTable';
@@ -9,7 +10,7 @@ import { BenchmarkMetricsTable } from '../features/about/components/BenchmarkMet
 import { DatasetProvenance } from '../features/about/components/DatasetProvenance';
 
 export const AboutPage: React.FC = () => {
-  const { hero } = aboutContent;
+  const { hero } = useLocalized(aboutContent);
 
   return (
     <SectionContainer className="pt-12 sm:pt-16 lg:pt-0">

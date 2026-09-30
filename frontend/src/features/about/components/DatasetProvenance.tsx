@@ -1,10 +1,13 @@
 import React from 'react';
 import { ArrowUpRight } from 'lucide-react';
+import { useLocalized } from '../../../app/localeContext';
 import { aboutContent } from '../../../content/about.content';
+import { uiContent } from '../../../content/ui.content';
 import { Chapter } from './Chapter';
 
 export const DatasetProvenance: React.FC = () => {
-  const { datasetProvenance } = aboutContent;
+  const { datasetProvenance } = useLocalized(aboutContent);
+  const { common } = useLocalized(uiContent);
 
   return (
     <Chapter
@@ -44,7 +47,7 @@ export const DatasetProvenance: React.FC = () => {
                     strokeWidth={1.75}
                     aria-hidden="true"
                   />
-                  <span className="sr-only"> (membuka tab baru)</span>
+                  <span className="sr-only"> {common.openInNewTab}</span>
                 </a>
               </div>
             </li>

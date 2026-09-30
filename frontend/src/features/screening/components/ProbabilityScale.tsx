@@ -13,6 +13,7 @@ export interface ProbabilityScaleProps {
   threshold: number; // 0..1
   readings: ScaleReading[];
   caption: string;
+  thresholdLabel?: string;
   className?: string;
 }
 
@@ -31,6 +32,7 @@ export const ProbabilityScale: React.FC<ProbabilityScaleProps> = ({
   threshold,
   readings,
   caption,
+  thresholdLabel = 'Ambang Batas',
   className = '',
 }) => {
   const fusedPct = pct(fused);
@@ -52,7 +54,7 @@ export const ProbabilityScale: React.FC<ProbabilityScaleProps> = ({
     <figure className={`print-break-avoid ${className}`}>
       <div
         role="img"
-        aria-label={`${caption}: ${fusedPct.toFixed(1)}%. Ambang Batas: ${thresholdPct.toFixed(0)}%. ${readings
+        aria-label={`${caption}: ${fusedPct.toFixed(1)}%. ${thresholdLabel}: ${thresholdPct.toFixed(0)}%. ${readings
           .map((r) => `${r.label}: ${pct(r.value).toFixed(1)}%`)
           .join('. ')}.`}
         className="relative h-[168px] mx-4 sm:mx-5"
@@ -68,7 +70,7 @@ export const ProbabilityScale: React.FC<ProbabilityScaleProps> = ({
           style={{ left: `${clampLabel(thresholdPct)}%` }}
           aria-hidden="true"
         >
-          Ambang Batas: {thresholdPct.toFixed(0)}%
+          {thresholdLabel}: {thresholdPct.toFixed(0)}%
         </span>
 
         {/* Pattern readings: seal on a leader line */}

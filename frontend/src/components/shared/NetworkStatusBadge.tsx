@@ -1,17 +1,20 @@
 import React from 'react';
 import { useBackendHealth } from '../../hooks/useBackendHealth';
+import { useLocalized } from '../../app/localeContext';
+import { uiContent } from '../../content/ui.content';
 
 /** System status printed as a quiet caption line, not a chrome pill. */
 export const NetworkStatusBadge: React.FC<{ className?: string }> = ({ className = '' }) => {
   const { isOnline, isLoading } = useBackendHealth();
+  const { backendStatus } = useLocalized(uiContent);
 
   const state =
     isLoading && isOnline === null ? 'checking' : isOnline ? 'online' : 'offline';
 
   const config = {
-    checking: { dot: 'bg-muted', text: 'text-muted', label: 'Memeriksa Sistem...' },
-    online: { dot: 'bg-aqua-rule', text: 'text-aqua-deep', label: 'Backend Online' },
-    offline: { dot: 'bg-rose-ink', text: 'text-rose-ink', label: 'Backend Offline' },
+    checking: { dot: 'bg-muted', text: 'text-muted', label: backendStatus.checking },
+    online: { dot: 'bg-aqua-rule', text: 'text-aqua-deep', label: backendStatus.online },
+    offline: { dot: 'bg-rose-ink', text: 'text-rose-ink', label: backendStatus.offline },
   }[state];
 
   return (

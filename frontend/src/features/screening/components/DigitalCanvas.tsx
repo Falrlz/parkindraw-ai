@@ -1,5 +1,7 @@
 import { useState, forwardRef, useImperativeHandle } from 'react';
 import type { DrawingModality } from '../../../services/types';
+import { useLocalized } from '../../../app/localeContext';
+import { screeningContent } from '../../../content/screening.content';
 import { useCanvasDrawing } from '../hooks/useCanvasDrawing';
 import { CanvasToolbar } from './CanvasToolbar';
 import { newHandPdSpiralPoints, toPath } from '../../../components/brand/spiral';
@@ -20,6 +22,7 @@ export interface DigitalCanvasProps {
 
 export const DigitalCanvas = forwardRef<DigitalCanvasRef, DigitalCanvasProps>(
   ({ modality, className = '' }, ref) => {
+    const { canvas, steps } = useLocalized(screeningContent);
     const [showWatermark, setShowWatermark] = useState(true);
 
     const {
@@ -102,7 +105,7 @@ export const DigitalCanvas = forwardRef<DigitalCanvasRef, DigitalCanvasProps>(
               onPointerUp={handlePointerUp}
               onPointerCancel={handlePointerCancel}
               className="relative w-full h-full block rounded-[10px] cursor-crosshair drawing-surface mix-blend-multiply"
-              aria-label={`Kanvas gambar untuk pola ${modality}`}
+              aria-label={`${canvas.canvasAriaLabel}: ${steps[modality].title}`}
             />
           </div>
         </div>

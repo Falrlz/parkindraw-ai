@@ -1,21 +1,25 @@
 import React from 'react';
 import { Check } from 'lucide-react';
+import { useLocalized } from '../../../app/localeContext';
+import { screeningContent } from '../../../content/screening.content';
 import type { ScreeningStep } from '../types';
 
 export interface StepIndicatorProps {
   currentStep: ScreeningStep;
 }
 
-const steps = [
-  { step: 1, label: 'Lingkaran' },
-  { step: 2, label: 'Berkelok' },
-  { step: 3, label: 'Spiral' },
-];
-
 /** Three measured segments on one rule; the current one is drawn in violet. */
 export const StepIndicator: React.FC<StepIndicatorProps> = ({ currentStep }) => {
+  const { steps: stepContent, wizard } = useLocalized(screeningContent);
+
+  const steps = [
+    { step: 1, label: stepContent.circle.title },
+    { step: 2, label: stepContent.meander.title },
+    { step: 3, label: stepContent.spiral.title },
+  ];
+
   return (
-    <nav aria-label="Progres Tahapan Skrining" className="w-full mb-10 sm:mb-12 short:mb-6 tight:mb-4">
+    <nav aria-label={wizard.progressLabel} className="w-full mb-10 sm:mb-12 short:mb-6 tight:mb-4">
       <ol className="grid grid-cols-3 gap-2 sm:gap-3">
         {steps.map(({ step, label }) => {
           const isCompleted = currentStep > step;
