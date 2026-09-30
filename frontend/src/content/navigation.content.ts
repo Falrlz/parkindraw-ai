@@ -34,11 +34,11 @@ export const navigationContent: Localized<NavigationContent> = {
     ],
     footer: {
       brandDescription:
-        'Parkindraw is an AI-assisted screening platform that analyses subtle micromotor changes in hand drawings to support early detection of Parkinson’s risk.',
+        'Parkindraw is an artificial intelligence-based screening platform that analyzes fine micromotor changes in hand drawings to support early detection of Parkinson\'s risk.',
       navigationTitle: 'Navigation',
       disclaimerTitle: 'Medical Disclaimer',
       disclaimerText:
-        'Screening results are meant to support early detection of Parkinson’s risk. They do not replace diagnosis, advice, or treatment from a qualified healthcare professional.',
+        'Screening results are intended to support early detection of Parkinson\'s risk, not as a substitute for diagnosis, advice, or medical treatment by professional healthcare providers.',
       copyrightText: '© 2026 Parkindraw',
     },
   },

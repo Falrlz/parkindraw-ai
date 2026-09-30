@@ -1,7 +1,7 @@
 import React from 'react';
 
 /**
- * ParkinDraw mark: the NewHandPD spiral template itself (same geometry as the
+ * Parkindraw mark: the NewHandPD spiral template itself (same geometry as the
  * canvas guide and the Spiral seal), drawn as one iris stroke with no tile.
  * Path generated from newHandPdSpiralPoints, fitted and centred in a 32px box.
  */

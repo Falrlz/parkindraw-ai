@@ -58,10 +58,72 @@ export const homeContent: Localized<HomeContent> = {
       ],
     },
     ctaBanner: {
-      heading: 'Siap Melakukan Penapisan Mandiri?',
+      heading: 'Siap Melakukan Skrining Mandiri?',
       description:
         'Hanya memerlukan beberapa menit untuk menyelesaikan tiga pola gambar. Tanpa biaya, tanpa registrasi, dan privasi Anda sepenuhnya terlindungi secara stateless.',
       buttonText: 'Mulai Sesi Skrining Sekarang',
+    },
+  },
+  en: {
+    hero: {
+      title: 'PARKINDRAW',
+      tagline: 'Draw. Analyze. Screen.',
+    },
+    explanation: {
+      text:
+        'Every pen stroke carries valuable neuromuscular information. Parkinson\'s disease often begins with subtle micromotor degradation such as subclinical tremors, pressure fluctuations, and spatial oscillations that are difficult to detect with the naked eye. Parkindraw analyzes stroke patterns to support rapid, non-invasive, and objective early detection of Parkinson\'s risk.',
+    },
+    workflow: {
+      heading: 'From Drawing to Pattern Insights',
+      steps: [
+        {
+          number: '01',
+          title: 'Draw',
+          description:
+            'Follow the guided pattern prompts. You can draw directly on the digital canvas using a touchscreen, stylus, or mouse, or draw by hand on plain white paper and upload a photo.',
+        },
+        {
+          number: '02',
+          title: 'Analyze',
+          description:
+            'Drawings are processed and analyzed using the ResNet-18 computer vision model. The convolutional neural network detects curvature irregularities, micrographia, fine tremor frequencies, and line discontinuities.',
+        },
+        {
+          number: '03',
+          title: 'Review',
+          description:
+            'Review the analysis as part of the screening process. Receive an integrated risk assessment based on late multi-modal fusion of all three drawings, complete with per-pattern breakdowns and clinical follow-up recommendations.',
+        },
+      ],
+    },
+    biomarkers: {
+      heading: 'Three Patterns. One Purpose.',
+      items: [
+        {
+          id: 'circle',
+          name: 'Circle',
+          description:
+            'The circular pattern evaluates hand movement coordination and kinematic consistency. Maintaining shape symmetry, stroke smoothness, and continuity offers valuable insight into fine motor control.',
+        },
+        {
+          id: 'meander',
+          name: 'Meander',
+          description:
+            'The meander pattern evaluates the ability to sustain rhythmic and consistent directional changes. Variations in stroke length, spacing, and corner sharpness reflect motor control shifts during repetitive movements.',
+        },
+        {
+          id: 'spiral',
+          name: 'Spiral',
+          description:
+            'The continuous outward spiral pattern requires fine motor coordination and spatial scaling. Changes in trajectory regularity and pen fluency help identify subtle motor characteristics linked to tremor and movement disorders.',
+        },
+      ],
+    },
+    ctaBanner: {
+      heading: 'Ready for a Self-Screening Session?',
+      description:
+        'It takes only a few minutes to complete the three drawing patterns. Free of charge, no registration required, and your privacy is fully protected via stateless processing.',
+      buttonText: 'Start Screening Session Now',
     },
   },
 };

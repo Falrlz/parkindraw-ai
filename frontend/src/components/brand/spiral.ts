@@ -1,5 +1,5 @@
 /**
- * Geometry for ParkinDraw's drawn-line emblem.
+ * Geometry for Parkindraw's drawn-line emblem.
  * One Archimedean spiral that unwinds into a meander tail: the three test
  * patterns (circle, meander, spiral) expressed as a single continuous stroke.
  */
