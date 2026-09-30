@@ -6,7 +6,7 @@ from typing import Optional
 from pydantic import BaseModel, ConfigDict, Field
 
 CLINICAL_DISCLAIMER: str = (
-    "ParkinDraw is an AI-assisted screening research tool, not an autonomous "
+    "Parkindraw is an AI-assisted screening research tool, not an autonomous "
     "diagnostic medical device. Predictions should be evaluated alongside "
     "comprehensive clinical neurological assessments."
 )
