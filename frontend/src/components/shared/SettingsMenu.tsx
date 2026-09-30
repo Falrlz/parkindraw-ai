@@ -1,10 +1,14 @@
 import React, { useEffect, useId, useRef, useState } from 'react';
 import { Settings } from 'lucide-react';
+import { useLocalized } from '../../app/localeContext';
+import { uiContent } from '../../content/ui.content';
+import { LanguageSwitch } from './LanguageSwitch';
 import { ThemeSwitch } from './ThemeSwitch';
 
 /** Navbar settings: a gear that opens a small panel anchored to the right edge. */
 export const SettingsMenu: React.FC = () => {
   const [open, setOpen] = useState(false);
+  const { settings } = useLocalized(uiContent);
   const panelId = useId();
   const rootRef = useRef<HTMLDivElement | null>(null);
   const buttonRef = useRef<HTMLButtonElement | null>(null);
@@ -33,7 +37,7 @@ export const SettingsMenu: React.FC = () => {
       <button
         ref={buttonRef}
         type="button"
-        aria-label="Pengaturan"
+        aria-label={settings.title}
         aria-expanded={open}
         aria-controls={panelId}
         onClick={() => setOpen((prev) => !prev)}
@@ -52,11 +56,13 @@ export const SettingsMenu: React.FC = () => {
         <div
           id={panelId}
           role="group"
-          aria-label="Pengaturan"
-          className="absolute right-0 top-full mt-2 w-64 p-4 bg-paper border border-line rounded-[10px] shadow-[0_12px_32px_-12px_rgba(15,14,26,0.35)] z-50"
+          aria-label={settings.title}
+          className="absolute right-0 top-full mt-2 w-80 p-4 bg-paper border border-line rounded-[10px] shadow-[0_12px_32px_-12px_rgba(15,14,26,0.35)] z-50"
         >
-          <p className="text-base font-semibold text-ink">Pengaturan</p>
-          <p className="mt-3 mb-2 text-sm text-muted">Tema</p>
+          <p className="text-base font-semibold text-ink">{settings.title}</p>
+          <p className="mt-3 mb-2 text-sm text-muted">{settings.language}</p>
+          <LanguageSwitch />
+          <p className="mt-5 mb-2 text-sm text-muted">{settings.theme}</p>
           <ThemeSwitch />
         </div>
       )}

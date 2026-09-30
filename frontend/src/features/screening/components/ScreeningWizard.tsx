@@ -97,48 +97,48 @@ export const ScreeningWizard: React.FC<ScreeningWizardProps> = ({ header }) => {
   if (state.currentStep === 0) {
     return (
       <>
-      {header}
-      <div className="grid grid-cols-12 gap-x-6 gap-y-12">
-        <div className="col-span-12 lg:col-span-5">
-          <h2 className="text-4xl sm:text-5xl font-medium tracking-[-0.03em] leading-[1.05] text-ink">
-            {preparation.title}
-          </h2>
-          <p className="mt-5 text-lg sm:text-xl text-body leading-relaxed max-w-[44ch]">
-            {preparation.subtitle}
-          </p>
+        {header}
+        <div className="grid grid-cols-12 gap-x-6 gap-y-12">
+          <div className="col-span-12 lg:col-span-5">
+            <h2 className="text-4xl sm:text-5xl font-medium tracking-[-0.03em] leading-[1.05] text-ink">
+              {preparation.title}
+            </h2>
+            <p className="mt-5 text-lg sm:text-xl text-body leading-relaxed max-w-[44ch]">
+              {preparation.subtitle}
+            </p>
 
-          <div className="mt-10 short:mt-6 flex items-center gap-3" aria-hidden="true">
-            {(['circle', 'meander', 'spiral'] as const).map((pattern) => (
-              <Medallion
-                key={pattern}
-                pattern={pattern}
-                className="w-20 sm:w-24 short:w-16 text-ink"
-              />
-            ))}
+            <div className="mt-10 short:mt-6 flex items-center gap-3" aria-hidden="true">
+              {(['circle', 'meander', 'spiral'] as const).map((pattern) => (
+                <Medallion
+                  key={pattern}
+                  pattern={pattern}
+                  className="w-20 sm:w-24 short:w-16 text-ink"
+                />
+              ))}
+            </div>
+
+            <Button
+              type="button"
+              size="lg"
+              onClick={startScreening}
+              rightIcon={<ArrowRight className="w-5 h-5" />}
+              className="mt-10 short:mt-6 w-full sm:w-auto"
+            >
+              {preparation.startButtonText}
+            </Button>
           </div>
 
-          <Button
-            type="button"
-            size="lg"
-            onClick={startScreening}
-            rightIcon={<ArrowRight className="w-5 h-5" />}
-            className="mt-10 short:mt-6 w-full sm:w-auto"
-          >
-            {preparation.startButtonText}
-          </Button>
+          <ol className="col-span-12 lg:col-span-6 lg:col-start-7 border-t border-ink/80" aria-label="Instruksi Persiapan">
+            {preparation.guidelines.map((text, idx) => (
+              <li key={idx} className="flex items-start gap-5 py-5 sm:py-6 short:py-2.5 border-b border-line">
+                <span className="tabular w-8 shrink-0 text-2xl font-medium tracking-[-0.03em] text-iris leading-none pt-0.5">
+                  {idx + 1}
+                </span>
+                <span className="text-lg short:text-base text-ink leading-relaxed">{text}</span>
+              </li>
+            ))}
+          </ol>
         </div>
-
-        <ol className="col-span-12 lg:col-span-6 lg:col-start-7 border-t border-ink/80" aria-label="Instruksi Persiapan">
-          {preparation.guidelines.map((text, idx) => (
-            <li key={idx} className="flex items-start gap-5 py-5 sm:py-6 short:py-2.5 border-b border-line">
-              <span className="tabular w-8 shrink-0 text-2xl font-medium tracking-[-0.03em] text-iris leading-none pt-0.5">
-                {idx + 1}
-              </span>
-              <span className="text-lg short:text-base text-ink leading-relaxed">{text}</span>
-            </li>
-          ))}
-        </ol>
-      </div>
       </>
     );
   }
@@ -167,9 +167,9 @@ export const ScreeningWizard: React.FC<ScreeningWizardProps> = ({ header }) => {
         <header className="mb-10 short:mb-6 flex flex-wrap items-end justify-between gap-x-8 gap-y-3">
           <div>
             <h2 className="text-4xl sm:text-5xl short:text-4xl font-medium tracking-[-0.03em] leading-[1.05] text-ink">
-              Laporan Skrining Neuromotorik
+              Laporan Skrining Pola Parkinson
             </h2>
-            <p className="mt-3 short:mt-2 text-lg sm:text-xl short:text-lg text-body">Hasil Penapisan Multimodal</p>
+            <p className="mt-3 short:mt-2 text-lg sm:text-xl short:text-lg text-body">Hasil Evaluasi Karakteristik Goresan</p>
           </div>
           {/* Document meta, set as plain text so it prints and reads as a record */}
           <dl className="flex flex-wrap gap-x-6 gap-y-1 text-sm text-muted tabular">

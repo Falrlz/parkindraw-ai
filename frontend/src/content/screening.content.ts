@@ -18,7 +18,7 @@ export const screeningContent: ScreeningContent = {
     circle: {
       stepNumber: 1,
       modality: 'circle',
-      title: 'Lingkaran (Circle)',
+      title: 'Lingkaran',
       category: 'Langkah 1 dari 3: Pola Melingkar Tertutup',
       instructionText:
         'Tarik garis melingkar utuh searah atau berlawanan jarum jam. Usahakan kedua ujung garis bertemu membentuk satu lingkaran tertutup.',
@@ -49,10 +49,10 @@ export const screeningContent: ScreeningContent = {
   report: {
     title: 'Laporan Hasil Penapisan Skrining',
     statusLabels: {
-      healthy: 'Pola Gerakan Normal / Rendah Risiko',
+      healthy: 'Pola Gerakan Normal',
       healthyDesc:
         'Karakteristik goresan tangan Anda tidak memperlihatkan anomali mikromotorik yang signifikan berdasarkan model pembanding.',
-      parkinson: 'Terindikasi Karakteristik Pola Parkinson',
+      parkinson: 'Terindikasi Pola Parkinson',
       parkinsonDesc:
         'Ditemukan indikasi ketidakteraturan kelengkungan, mikrografia, atau fluktuasi goresan yang menyerupai karakteristik neuromotorik Parkinson.',
     },

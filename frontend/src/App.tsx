@@ -1,5 +1,6 @@
 import React from 'react';
 import { RouteProvider, useRoute } from './app/AppRouter';
+import { LocaleProvider } from './app/LocaleProvider';
 import { ThemeProvider } from './app/ThemeProvider';
 import { RootLayout } from './app/layouts/RootLayout';
 import { HomePage } from './pages/HomePage';
@@ -27,9 +28,11 @@ const AppContent: React.FC = () => {
 export default function App() {
   return (
     <ThemeProvider>
-      <RouteProvider>
-        <AppContent />
-      </RouteProvider>
+      <LocaleProvider>
+        <RouteProvider>
+          <AppContent />
+        </RouteProvider>
+      </LocaleProvider>
     </ThemeProvider>
   );
 }

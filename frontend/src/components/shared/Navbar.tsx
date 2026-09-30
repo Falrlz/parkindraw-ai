@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { ArrowRight, Menu, X } from 'lucide-react';
 import { useRoute } from '../../app/AppRouter';
+import { useLocalized } from '../../app/localeContext';
 import { navigationContent } from '../../content/navigation.content';
+import { uiContent } from '../../content/ui.content';
 import { BrandMark } from '../brand/BrandMark';
+import { LanguageSwitch } from './LanguageSwitch';
 import { SettingsMenu } from './SettingsMenu';
 import { ThemeSwitch } from './ThemeSwitch';
 
@@ -10,7 +13,8 @@ export const Navbar: React.FC = () => {
   const { currentRoute, navigate } = useRoute();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const { brand, menuItems } = navigationContent;
+  const { brand, menuItems } = useLocalized(navigationContent);
+  const { settings, nav } = useLocalized(uiContent);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -47,7 +51,7 @@ export const Navbar: React.FC = () => {
         </button>
 
         {/* Centred so the hero ribbon passing behind the right edge never crosses a label */}
-        <nav className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-8" aria-label="Navigasi Utama">
+        <nav className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-8" aria-label={nav.mainLabel}>
           {menuItems.map((item) => {
             const isActive = currentRoute === item.path;
             return (
@@ -68,7 +72,7 @@ export const Navbar: React.FC = () => {
           })}
         </nav>
 
-        {/* Settings on the right edge (desktop); on phones they live inside the menu */}
+        {/* Settings (language, theme) on the right edge (desktop); on phones they live inside the menu */}
         <div className="hidden md:block -mr-2">
           <SettingsMenu />
         </div>
@@ -77,7 +81,7 @@ export const Navbar: React.FC = () => {
           type="button"
           aria-expanded={mobileMenuOpen}
           aria-controls="mobile-nav"
-          aria-label="Buka menu navigasi"
+          aria-label={mobileMenuOpen ? nav.closeMenu : nav.openMenu}
           onClick={() => setMobileMenuOpen((prev) => !prev)}
           className="md:hidden w-11 h-11 -mr-2 flex items-center justify-center text-ink rounded-md hover:bg-iris-wash cursor-pointer"
         >
@@ -89,7 +93,7 @@ export const Navbar: React.FC = () => {
         <nav
           id="mobile-nav"
           className="md:hidden border-t border-line bg-ground px-5 pt-2 pb-6"
-          aria-label="Menu Navigasi Mobile"
+          aria-label={nav.mobileLabel}
         >
           <ul>
             {menuItems.map((item) => {
@@ -113,8 +117,10 @@ export const Navbar: React.FC = () => {
           </ul>
 
           <div className="mt-6">
-            <p className="text-base font-semibold text-ink">Pengaturan</p>
-            <p className="mt-3 mb-2 text-sm text-muted">Tema</p>
+            <p className="text-base font-semibold text-ink">{settings.title}</p>
+            <p className="mt-3 mb-2 text-sm text-muted">{settings.language}</p>
+            <LanguageSwitch />
+            <p className="mt-5 mb-2 text-sm text-muted">{settings.theme}</p>
             <ThemeSwitch />
           </div>
         </nav>

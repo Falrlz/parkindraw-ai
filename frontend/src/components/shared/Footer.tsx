@@ -1,5 +1,6 @@
 import React from 'react';
 import { useRoute } from '../../app/AppRouter';
+import { useLocalized } from '../../app/localeContext';
 import { navigationContent } from '../../content/navigation.content';
 
 /** Same text size as the hero lede for every line; column titles carry the weight. */
@@ -7,7 +8,7 @@ const footerText = 'text-lg sm:text-xl short:text-[17px] leading-relaxed';
 
 export const Footer: React.FC = () => {
   const { navigate } = useRoute();
-  const { footer, menuItems, brand } = navigationContent;
+  const { footer, menuItems, brand } = useLocalized(navigationContent);
 
   return (
     <footer className={`no-print mt-auto bg-ground border-t border-line text-body ${footerText}`}>

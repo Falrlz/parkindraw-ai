@@ -1,16 +1,19 @@
 import React from 'react';
 import { Monitor, Moon, Sun } from 'lucide-react';
+import { useLocalized } from '../../app/localeContext';
 import { useTheme, type ThemePreference } from '../../app/themeContext';
+import { uiContent } from '../../content/ui.content';
 
-const options: { id: ThemePreference; label: string; icon: React.ReactNode }[] = [
-  { id: 'light', label: 'Terang', icon: <Sun className="w-4 h-4" strokeWidth={1.75} aria-hidden="true" /> },
-  { id: 'dark', label: 'Gelap', icon: <Moon className="w-4 h-4" strokeWidth={1.75} aria-hidden="true" /> },
-  { id: 'system', label: 'Sistem', icon: <Monitor className="w-4 h-4" strokeWidth={1.75} aria-hidden="true" /> },
+const options: { id: ThemePreference; icon: React.ReactNode }[] = [
+  { id: 'light', icon: <Sun className="w-4 h-4" strokeWidth={1.75} aria-hidden="true" /> },
+  { id: 'dark', icon: <Moon className="w-4 h-4" strokeWidth={1.75} aria-hidden="true" /> },
+  { id: 'system', icon: <Monitor className="w-4 h-4" strokeWidth={1.75} aria-hidden="true" /> },
 ];
 
 /** Three-way segmented radio group: light, dark, follow the operating system. */
 export const ThemeSwitch: React.FC<{ className?: string }> = ({ className = '' }) => {
   const { preference, setPreference } = useTheme();
+  const { settings } = useLocalized(uiContent);
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (!['ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp'].includes(e.key)) return;
@@ -25,7 +28,7 @@ export const ThemeSwitch: React.FC<{ className?: string }> = ({ className = '' }
   return (
     <div
       role="radiogroup"
-      aria-label="Tema"
+      aria-label={settings.theme}
       onKeyDown={onKeyDown}
       className={`grid grid-cols-3 gap-1 p-1 bg-ground border border-line rounded-lg ${className}`}
     >
@@ -45,7 +48,7 @@ export const ThemeSwitch: React.FC<{ className?: string }> = ({ className = '' }
             }`}
           >
             {option.icon}
-            {option.label}
+            {settings.themeOptions[option.id]}
           </button>
         );
       })}

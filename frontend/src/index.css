@@ -36,6 +36,8 @@
   --color-rose-wash: #fcecef;
   /* Filled deep surfaces (CTA band, formula plate, active segments); text on them is white */
   --color-ink-fill: #1b1547;
+  /* Formula variables on the ink-fill plate; fixed light tint because the plate stays dark in both themes */
+  --color-on-ink-accent: #efedfd;
   /* Text set on an iris fill */
   --color-on-iris: #ffffff;
 

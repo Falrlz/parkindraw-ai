@@ -107,6 +107,17 @@ export interface ModelParameterRow {
   value: string;
 }
 
+export interface DatasetSource {
+  /** Register key shown beside the entry, e.g. Dataset or Publikasi */
+  kind: string;
+  title: string;
+  detail: string;
+  meta?: string;
+  href: string;
+  /** The address as printed, so the source survives print and copy */
+  hrefLabel: string;
+}
+
 export interface AboutContent {
   hero: {
     title: string;
@@ -131,12 +142,8 @@ export interface AboutContent {
   datasetProvenance: {
     heading: string;
     datasetName: string;
-    institutions: string[];
-    citations: {
-      authors: string;
-      title: string;
-      journal: string;
-    }[];
+    sourcesHeading: string;
+    sources: DatasetSource[];
     subjectStats: string;
     zeroLeakageProtocol: string;
   };
@@ -151,4 +158,19 @@ export interface FaqItemContent {
 export interface FaqContent {
   heading: string;
   items: FaqItemContent[];
+}
+
+export interface UiContent {
+  settings: {
+    title: string;
+    theme: string;
+    themeOptions: Record<'light' | 'dark' | 'system', string>;
+    language: string;
+  };
+  nav: {
+    mainLabel: string;
+    mobileLabel: string;
+    openMenu: string;
+    closeMenu: string;
+  };
 }

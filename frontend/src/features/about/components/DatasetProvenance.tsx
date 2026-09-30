@@ -1,5 +1,5 @@
 import React from 'react';
-import { BookOpen } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
 import { aboutContent } from '../../../content/about.content';
 import { Chapter } from './Chapter';
 
@@ -16,36 +16,40 @@ export const DatasetProvenance: React.FC = () => {
         {datasetProvenance.subjectStats} {datasetProvenance.zeroLeakageProtocol}
       </p>
 
-      <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-10">
-        <div>
-          <h3 className="text-base font-semibold text-ink pb-3 border-b border-ink/80">
-            Institusi Peneliti Sumber
-          </h3>
-          <ul>
-            {datasetProvenance.institutions.map((inst, idx) => (
-              <li key={idx} className="py-4 border-b border-line text-base text-body leading-relaxed">
-                {inst}
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div>
-          <h3 className="flex items-center gap-2 text-base font-semibold text-ink pb-3 border-b border-ink/80">
-            <BookOpen className="w-4 h-4" strokeWidth={1.75} aria-hidden="true" />
-            Publikasi Ilmiah Rujukan
-          </h3>
-          <ul>
-            {datasetProvenance.citations.map((cite, idx) => (
-              <li key={idx} className="py-4 border-b border-line leading-relaxed">
-                <p className="text-base font-medium text-ink">{cite.title}</p>
-                <p className="mt-1 text-sm text-body">
-                  {cite.authors} &bull; <span className="italic text-iris-deep">{cite.journal}</span>
-                </p>
-              </li>
-            ))}
-          </ul>
-        </div>
+      {/* Source register: the key sits beside each entry, and the printed address is the link itself */}
+      <div className="mt-12">
+        <h3 className="text-base font-semibold text-ink pb-3 border-b border-ink/80">
+          {datasetProvenance.sourcesHeading}
+        </h3>
+        <ul>
+          {datasetProvenance.sources.map((source) => (
+            <li
+              key={source.href}
+              className="grid grid-cols-1 sm:grid-cols-[8rem_minmax(0,1fr)] gap-x-6 gap-y-1 py-6 border-b border-line"
+            >
+              <p className="text-sm text-muted sm:pt-1">{source.kind}</p>
+              <div className="min-w-0">
+                <p className="text-lg font-medium text-ink leading-snug max-w-[48ch]">{source.title}</p>
+                <p className="mt-2 text-base text-body leading-relaxed max-w-[62ch]">{source.detail}</p>
+                {source.meta && <p className="mt-1 text-sm text-muted italic">{source.meta}</p>}
+                <a
+                  href={source.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group mt-3 inline-flex items-start gap-1 text-sm font-medium text-iris-deep underline decoration-iris/40 underline-offset-4 hover:decoration-iris transition-colors break-all rounded-sm"
+                >
+                  <span>{source.hrefLabel}</span>
+                  <ArrowUpRight
+                    className="w-4 h-4 shrink-0 mt-px transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                    strokeWidth={1.75}
+                    aria-hidden="true"
+                  />
+                  <span className="sr-only"> (membuka tab baru)</span>
+                </a>
+              </div>
+            </li>
+          ))}
+        </ul>
       </div>
     </Chapter>
   );

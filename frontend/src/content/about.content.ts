@@ -4,12 +4,12 @@ export const aboutContent: AboutContent = {
   hero: {
     title: 'Kecerdasan Buatan di Balik Parkindraw',
     subtitle:
-      'Membedah arsitektur deep learning, formulasi fusi probabilitas, metadata teknis, dan dataset pelatihan yang mendasari sistem ParkinDraw AI.',
+      'Membedah arsitektur deep learning, formulasi fusi probabilitas, metadata teknis, dan dataset pelatihan yang mendasari sistem Parkindraw.',
   },
   aiRationale: {
     heading: 'Kecerdasan Buatan di Balik ParkinDraw',
     transferLearningText:
-      'ParkinDraw mengadopsi paradigma Transfer Learning menggunakan arsitektur ResNet-18 (Residual Network 18-layer). Seluruh lapisan konvolusional dasar dibekukan (frozen backbone) dengan bobot prapelatihan ImageNet. Pendekatan ini memungkinkan model bertindak sebagai ekstraktor fitur visual deterministik yang sangat andal tanpa risiko overfitting (penghafalan data berlebih) pada dataset citra medis berukuran terukur.',
+      'ParkinDraw mengadopsi paradigma Transfer Learning menggunakan arsitektur ResNet-18 (Residual Network 18-layer). Seluruh lapisan konvolusional dasar dibekukan (frozen backbone) dengan bobot prapelatihan ImageNet untuk mengekstraksi fitur visual dasar serta mengurangi risiko overfitting pada dataset dengan jumlah sampel terbatas.',
     lateFusionHeading: 'Mekanisme Late Multi-Modal Fusion',
     lateFusionText:
       'Keputusan penapisan tidak disandarkan pada satu jenis gambar tunggal. ParkinDraw menerapkan fusi keputusan multi-modal terdistribusi rata yang menggabungkan probabilitas independen dari ketiga modalitas:',
@@ -36,41 +36,41 @@ export const aboutContent: AboutContent = {
       { parameter: 'Parameter Total Model', value: '11.177.538 parameter' },
       { parameter: 'Ambang Batas Keputusan (Threshold)', value: '0.50 (Default)' },
     ],
-    benchmarkHeading: 'Hasil Evaluasi pada Data Uji Terkunci (Holdout 20%)',
+    benchmarkHeading: 'Hasil Evaluasi pada Data Uji Holdout 20%',
     benchmarkDescription:
       'Performa diukur secara independen pada 20% data pasien yang dikunci sejak awal dan tidak pernah terlihat selama proses pelatihan maupun validasi silang (cross-validation):',
     benchmarkMetrics: [
       {
-        modality: 'Circle (Lingkaran)',
+        modality: 'Lingkaran',
         accuracy: '92.31%',
         precision: '85.71%',
         recall: '100.00%',
-        f1Score: '0.9231',
-        rocAuc: '0.9762',
+        f1Score: '92.31%',
+        rocAuc: '97.62%',
       },
       {
         modality: 'Berkelok',
         accuracy: '88.46%',
         precision: '82.14%',
         recall: '95.83%',
-        f1Score: '0.8846',
-        rocAuc: '0.9360',
+        f1Score: '88.46%',
+        rocAuc: '93.60%',
       },
       {
         modality: 'Spiral',
         accuracy: '88.46%',
         precision: '80.00%',
         recall: '100.00%',
-        f1Score: '0.8889',
-        rocAuc: '0.9911',
+        f1Score: '88.89%',
+        rocAuc: '99.11%',
       },
       {
         modality: 'Macro Average (Rerata)',
         accuracy: '89.74%',
         precision: '82.62%',
         recall: '98.61%',
-        f1Score: '0.8989',
-        rocAuc: '0.9678',
+        f1Score: '89.89%',
+        rocAuc: '96.78%',
       },
     ],
     recallNote:
@@ -79,27 +79,28 @@ export const aboutContent: AboutContent = {
   datasetProvenance: {
     heading: 'Dataset Pelatihan & Protokol Integritas',
     datasetName: 'NewHandPD (New Handwriting Parkinson\'s Disease Dataset)',
-    institutions: [
-      'Laboratorium Komputasi Terapan & Pembelajaran Mesin, Federal University of São Carlos (UFSCar), Brasil',
-      'São Paulo State University (UNESP), Bauru, Brasil',
-    ],
-    citations: [
+    sourcesHeading: 'Sumber Data & Rujukan',
+    sources: [
       {
-        authors: 'Pereira, C. R., et al.',
-        title:
-          'A new computer vision-based approach to aid the diagnosis of Parkinson\'s disease using offline handwriting images',
-        journal: 'Information Sciences / Elsevier',
+        kind: 'Dataset',
+        title: 'NewHandPD',
+        detail:
+          'Dikumpulkan di Botucatu Medical School, São Paulo State University (UNESP), Brasil. Setiap subjek menggambar pola spiral, berkelok, dan lingkaran menggunakan pena pintar BiSP.',
+        href: 'https://wwwp.fc.unesp.br/~papa/pub/datasets/Handpd/',
+        hrefLabel: 'wwwp.fc.unesp.br/~papa/pub/datasets/Handpd',
       },
       {
-        authors: 'Kansizoglou, I., et al. (2025)',
-        title:
-          'Drawing-Aware Parkinson\'s Disease Detection Through Hierarchical Deep Learning Models',
-        journal: 'IEEE Transactions / Springer',
+        kind: 'Publikasi',
+        title: 'Deep Learning-Aided Parkinson\'s Disease Diagnosis from Handwritten Dynamics',
+        detail: 'Pereira, C. R., Weber, S. A. T., Hook, C., Rosa, G. H., & Papa, J. P.',
+        meta: '29th SIBGRAPI Conference on Graphics, Patterns and Images, 2016, hlm. 340–346',
+        href: 'https://doi.org/10.1109/SIBGRAPI.2016.054',
+        hrefLabel: 'doi.org/10.1109/SIBGRAPI.2016.054',
       },
     ],
     subjectStats:
-      'Total 66 subjek (31 pasien terdiagnosis klinis Parkinson dan 35 subjek kontrol sehat yang sebanding secara demografis), menghasilkan 594 citra goresan tangan asli.',
+      'Dataset NewHandPD terdiri dari 66 subjek (31 Parkinson, 35 kontrol sehat) dengan 594 citra goresan tangan.',
     zeroLeakageProtocol:
-      'Pembagian partisi data menerapkan protokol ketat Patient-Level Group Split. Seluruh sampel dari satu individu yang sama dikunci dalam fold yang sama dan tidak pernah terbagi antara data latih dan data uji holdout. Protokol ini menjamin evaluasi performa model bebas sepenuhnya dari bias kebocoran data klinis (zero clinical data leakage).',
+      'Protokol Patient-Level Group Split digunakan untuk mengunci data tiap individu pada satu partisi demi mencegah bias data leakage.',
   },
 };

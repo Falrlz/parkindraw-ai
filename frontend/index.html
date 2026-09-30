@@ -17,6 +17,11 @@
       document.documentElement.dataset.theme = theme;
       var meta = document.querySelector('meta[name="theme-color"]');
       if (meta) meta.setAttribute('content', dark ? '#0f0e1a' : '#f7f7fa');
+      // Declare the saved language before first paint too
+      try {
+        var lang = localStorage.getItem('parkindraw-locale');
+        if (lang === 'id' || lang === 'en') document.documentElement.lang = lang;
+      } catch (e) {}
     })();
   </script>
 </head>

@@ -39,17 +39,18 @@ export const BenchmarkMetricsTable: React.FC = () => {
         })}
       </ul>
 
+      {/* Every row shares the same 12px edge inset, so the washed macro row keeps its columns aligned */}
       <div className="hidden sm:block mt-8 overflow-x-auto">
         <table className="w-full min-w-[600px] text-left">
           <caption className="sr-only">{modelMetadata.benchmarkHeading}</caption>
           <thead>
             <tr className="border-b border-ink/80 text-sm text-muted">
-              <th scope="col" className="py-3 pr-4 font-normal">Modalitas Uji</th>
-              <th scope="col" className="py-3 px-3 font-normal text-right">Akurasi</th>
-              <th scope="col" className="py-3 px-3 font-normal text-right">Presisi</th>
-              <th scope="col" className="py-3 px-3 font-medium text-right text-iris">Sensitivitas (Recall)</th>
+              <th scope="col" className="py-3 pl-3 pr-4 font-normal">Modalitas Uji</th>
+              <th scope="col" className="py-3 px-3 font-normal text-right">Accuracy</th>
+              <th scope="col" className="py-3 px-3 font-normal text-right">Precision</th>
+              <th scope="col" className="py-3 px-3 font-medium text-right text-iris">Recall</th>
               <th scope="col" className="py-3 px-3 font-normal text-right">F1-Score</th>
-              <th scope="col" className="py-3 pl-3 font-medium text-right text-iris">ROC-AUC</th>
+              <th scope="col" className="py-3 px-3 font-medium text-right text-iris">ROC-AUC</th>
             </tr>
           </thead>
           <tbody className="tabular text-ink">
@@ -60,16 +61,14 @@ export const BenchmarkMetricsTable: React.FC = () => {
                   key={idx}
                   className={isMacro ? 'bg-iris-wash font-medium' : 'border-b border-line'}
                 >
-                  <th scope="row" className={`py-4 pr-4 text-base ${isMacro ? 'pl-3 font-semibold' : 'font-normal'}`}>
+                  <th scope="row" className={`py-4 pl-3 pr-4 text-base ${isMacro ? 'font-semibold' : 'font-normal'}`}>
                     {row.modality}
                   </th>
                   <td className="py-4 px-3 text-right">{row.accuracy}</td>
                   <td className="py-4 px-3 text-right">{row.precision}</td>
                   <td className="py-4 px-3 text-right font-semibold text-iris-deep">{row.recall}</td>
                   <td className="py-4 px-3 text-right">{row.f1Score}</td>
-                  <td className={`py-4 pl-3 text-right font-semibold text-iris-deep ${isMacro ? 'pr-3' : ''}`}>
-                    {row.rocAuc}
-                  </td>
+                  <td className="py-4 px-3 text-right font-semibold text-iris-deep">{row.rocAuc}</td>
                 </tr>
               );
             })}
