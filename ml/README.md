@@ -1,10 +1,19 @@
-# ParkinDraw Machine Learning Pipeline
+# Parkindraw AI - Machine Learning
 
-This sub-project hosts the complete end-to-end Machine Learning pipeline for **ParkinDraw AI**, an AI-assisted clinical screening research system designed to detect Parkinson's disease through handwriting and drawing movement analysis (**Circle**, **Meander**, and **Spiral**).
+This sub-project hosts the complete end-to-end Machine Learning pipeline for **Parkindraw AI**, an AI-assisted clinical screening research system designed to detect Parkinson's disease through handwriting and drawing movement analysis (**Circle**, **Meander**, and **Spiral**).
 
 It implements robust raw data ingestion, automated anomaly resolution, SHA-256 duplicate clustering for zero clinical leakage, clinical affine data augmentation, fine-tuned **ResNet-18** deep learning architectures, patient-level **Stratified 3-Fold Cross-Validation**, local experiment tracking via **MLflow**, production weight checkpointing, and independent evaluation against a **locked 20% holdout test partition**.
 
-> **Clinical Research Disclaimer**: ParkinDraw is designed as an AI-assisted clinical screening research tool. It is not an autonomous diagnostic medical device or a replacement for clinical neurological examination by board-certified physicians.
+---
+
+## Tech Stack
+
+- **Deep Learning Framework**: [PyTorch](https://pytorch.org/) + [torchvision](https://pytorch.org/vision/)
+- **Experiment Tracking**: [MLflow](https://mlflow.org/) (SQLite backend & local artifact storage)
+- **Scientific Computing**: [NumPy](https://numpy.org/), [pandas](https://pandas.pydata.org/), [scikit-learn](https://scikit-learn.org/)
+- **Image Processing**: [Pillow](https://python-pillow.org/)
+- **Visualization**: [Matplotlib](https://matplotlib.org/), [Seaborn](https://seaborn.pydata.org/)
+- **Environment & Package Manager**: [uv](https://docs.astral.sh/uv/)
 
 ---
 
@@ -53,8 +62,8 @@ The models are trained and evaluated on the **NewHandPD (New Hand Parkinson's Di
 
 ### 1. Target Classes
 The screening task is formulated as binary classification:
-* `Healthy` (Class 0): Healthy control subject without motor impairment.
-* `Parkinson` (Class 1): Clinical participant diagnosed with Parkinson's disease.
+- `Healthy` (Class 0): Healthy control subject without motor impairment.
+- `Parkinson` (Class 1): Clinical participant diagnosed with Parkinson's disease.
 
 ### 2. Drawing Modalities
 Each participant undergoes three distinct drawing examination protocols:
@@ -72,12 +81,12 @@ To ensure rigorous clinical integrity and eliminate data leakage, partitioning a
 | **Spiral** | 4 | 212 | 52 | 264 |
 | **Total** | **9** | **477 (53 subjects)** | **117 (13 subjects)** | **594** |
 
-* **Cluster-Aware Splitting**: Analysis of the dataset revealed byte-identical duplicate files shared across distinct Parkinson subject IDs (e.g. subjects `P01`, `P04`, and `P25`). The data preparation pipeline calculates SHA-256 hashes for all 594 images, clusters identical subjects into indivisible units (`cluster_id`), and guarantees that connected subjects **never straddle** the development/holdout boundary or cross-validation folds (**0 leakage guarantee**).
-* **Locked Holdout Isolation**: The 117 holdout test images (13 subjects) remain completely unobserved during cross-validation training and hyperparameter tuning, serving exclusively as an independent final clinical benchmark.
+- **Cluster-Aware Splitting**: Analysis of the dataset revealed byte-identical duplicate files shared across distinct Parkinson subject IDs (e.g. subjects `P01`, `P04`, and `P25`). The data preparation pipeline calculates SHA-256 hashes for all 594 images, clusters identical subjects into indivisible units (`cluster_id`), and guarantees that connected subjects **never straddle** the development/holdout boundary or cross-validation folds (**0 leakage guarantee**).
+- **Locked Holdout Isolation**: The 117 holdout test images (13 subjects) remain completely unobserved during cross-validation training and hyperparameter tuning, serving exclusively as an independent final clinical benchmark.
 
 ---
 
-## Project Workflow & Pipelines
+## Architecture & Pipeline Workflows
 
 The machine learning lifecycle is decoupled into clean, modular pipelines:
 
@@ -131,29 +140,29 @@ graph TD
 
 ### 1. Stage 1: Data Preparation & Integrity Guard (`pipelines.preparation`)
 Located in [`pipelines/preparation.py`](pipelines/preparation.py), this pipeline:
-* **Anomaly Resolution**: Parses raw directory structures, standardizes subject ID tokens (`H01`..`H36`, `P01`..`P30`), and corrects dataset-specific naming defects (e.g. subject `P08`'s `mea5` file mapped to valid drawing index 4).
-* **SHA-256 Hashing & Clustering**: Computes cryptographic hashes for all 594 images, groups duplicate-linked subjects into unified clusters (`cluster_id`), and logs cluster compositions.
-* **Cluster-Stratified Split**: Partitions clusters into 80% development and 20% holdout sets while strictly preserving class proportions.
-* **Automated Verification**: Executes `verify_no_leakage()` to assert that zero subjects and zero identical image hashes cross the partition boundary before exporting [`data/splits/master_manifest.csv`](data/splits/master_manifest.csv).
+- **Anomaly Resolution**: Parses raw directory structures, standardizes subject ID tokens (`H01`..`H36`, `P01`..`P30`), and corrects dataset-specific naming defects (e.g. subject `P08`'s `mea5` file mapped to valid drawing index 4).
+- **SHA-256 Hashing & Clustering**: Computes cryptographic hashes for all 594 images, groups duplicate-linked subjects into unified clusters (`cluster_id`), and logs cluster compositions.
+- **Cluster-Stratified Split**: Partitions clusters into 80% development and 20% holdout sets while strictly preserving class proportions.
+- **Automated Verification**: Executes `verify_no_leakage()` to assert that zero subjects and zero identical image hashes cross the partition boundary before exporting [`data/splits/master_manifest.csv`](data/splits/master_manifest.csv).
 
 ### 2. Stage 2: Dual Preprocessing, Augmentation & 3-Fold CV (`pipelines.train`)
 Located in [`pipelines/train.py`](pipelines/train.py) and [`src/training/trainer.py`](src/training/trainer.py):
-* **Conservative Clinical Data Augmentation**: In [`src/preprocessing/augmentation.py`](src/preprocessing/augmentation.py), training images undergo controlled geometric jitter:
-  * Small rotation within $\pm 5.0^\circ$ (`MAX_ROTATION_DEGREES = 5.0`).
-  * Translation within $\pm 4\%$ (`MAX_TRANSLATE_FRACTION = 0.04`).
-  * Scaling between 0.95 and 1.05 (`SCALE_RANGE = (0.95, 1.05)`).
-  * Paper-white background fill (`PAPER_FILL = 255`) to prevent artificial black borders.
-  * **Strict Clinical Invariant**: No horizontal or vertical flipping is performed, preserving stroke progression direction and handedness biomechanics.
-* **Deterministic Preprocessing**: Validation and holdout images are resized to $224 \times 224$ using bilinear interpolation and standardized with ImageNet channel statistics ($\mu=[0.485, 0.456, 0.406], \sigma=[0.229, 0.224, 0.225]$).
-* **Neural Architecture**: Employs a pre-trained **ResNet-18** feature backbone frozen at the convolutional layers (`requires_grad = False`). The classification head is replaced with `nn.Sequential(Dropout(p=0.0), Linear(512, 2))`.
-* **Optimization Setup**: Uses `AdamW` optimizer (`learning_rate = 1e-3`, `weight_decay = 1e-4`), `ReduceLROnPlateau` scheduler (`factor = 0.5`, `patience = 2`, `min_lr = 1e-6`), and `EarlyStopping` (`patience = 5`) monitoring validation loss.
-* **Full 3-Fold Cross-Validation**: Evaluates each modality over all 3 stratified folds, saving per-fold checkpoints (`resnet18_{modality}_fold{0,1,2}.pt`) and copying the highest-performing weights (based on ROC-AUC, F1, and minimum validation loss) to canonical [`artifacts/models/resnet18_{modality}.pt`](artifacts/models/).
+- **Conservative Clinical Data Augmentation**: In [`src/preprocessing/augmentation.py`](src/preprocessing/augmentation.py), training images undergo controlled geometric jitter:
+  - Small rotation within $\pm 5.0^\circ$ (`MAX_ROTATION_DEGREES = 5.0`).
+  - Translation within $\pm 4\%$ (`MAX_TRANSLATE_FRACTION = 0.04`).
+  - Scaling between 0.95 and 1.05 (`SCALE_RANGE = (0.95, 1.05)`).
+  - Paper-white background fill (`PAPER_FILL = 255`) to prevent artificial black borders.
+  - **Strict Clinical Invariant**: No horizontal or vertical flipping is performed, preserving stroke progression direction and handedness biomechanics.
+- **Deterministic Preprocessing**: Validation and holdout images are resized to $224 \times 224$ using bilinear interpolation and standardized with ImageNet channel statistics ($\mu=[0.485, 0.456, 0.406], \sigma=[0.229, 0.224, 0.225]$).
+- **Neural Architecture**: Employs a pre-trained **ResNet-18** feature backbone frozen at the convolutional layers (`requires_grad = False`). The classification head is replaced with `nn.Sequential(Dropout(p=0.0), Linear(512, 2))`.
+- **Optimization Setup**: Uses `AdamW` optimizer (`learning_rate = 1e-3`, `weight_decay = 1e-4`), `ReduceLROnPlateau` scheduler (`factor = 0.5`, `patience = 2`, `min_lr = 1e-6`), and `EarlyStopping` (`patience = 5`) monitoring validation loss.
+- **Full 3-Fold Cross-Validation**: Evaluates each modality over all 3 stratified folds, saving per-fold checkpoints (`resnet18_{modality}_fold{0,1,2}.pt`) and copying the highest-performing weights (based on ROC-AUC, F1, and minimum validation loss) to canonical [`artifacts/models/resnet18_{modality}.pt`](artifacts/models/).
 
 ### 3. Stage 3: Locked Holdout Evaluation (`pipelines.evaluate`)
 Located in [`pipelines/evaluate.py`](pipelines/evaluate.py) and [`src/evaluation/evaluator.py`](src/evaluation/evaluator.py):
-* Loads canonical models and evaluates inference on the 117 unobserved holdout samples.
-* Computes clinical evaluation metrics: **Accuracy**, **Precision**, **Recall (Sensitivity)**, **F1-Score**, and **ROC-AUC**.
-* Generates publication-ready confusion matrices and loss/accuracy learning curve plots into [`assets/figures/`](assets/figures/).
+- Loads canonical models and evaluates inference on the 117 unobserved holdout samples.
+- Computes clinical evaluation metrics: **Accuracy**, **Precision**, **Recall (Sensitivity)**, **F1-Score**, and **ROC-AUC**.
+- Generates publication-ready confusion matrices and loss/accuracy learning curve plots into [`assets/figures/`](assets/figures/).
 
 ---
 
@@ -190,8 +199,8 @@ The table below summarizes model performance on the independent, locked test par
 | **Macro Average** | **117** | **89.74%** | **82.62%** | **98.61%** | **0.8989** | **0.9678** | *Production Checkpoints* |
 
 #### Clinical Analysis:
-* **Near-Perfect Screening Sensitivity**: Both Circle and Spiral models achieved **100.00% Recall** on locked holdout data (0 false negatives), and Meander achieved **95.83% Recall**.
-* **Strong Separability**: ROC-AUC scores exceed **0.93** across all modalities (Spiral reaching **0.9911**), proving strong separation between healthy motor execution and Parkinsonian dysgraphia.
+- **Near-Perfect Screening Sensitivity**: Both Circle and Spiral models achieved **100.00% Recall** on locked holdout data (0 false negatives), and Meander achieved **95.83% Recall**.
+- **Strong Separability**: ROC-AUC scores exceed **0.93** across all modalities (Spiral reaching **0.9911**), proving strong separation between healthy motor execution and Parkinsonian dysgraphia.
 
 ---
 
@@ -212,51 +221,47 @@ Detailed True vs. Predicted breakdowns showing count and class-normalized percen
 
 #### C. Training & Validation Learning Curves
 Epoch-by-epoch loss convergence and validation accuracy trajectories:
-* **Spiral Trajectory Learning**:
+- **Spiral Trajectory Learning**:
   ![Spiral Learning Curve](assets/figures/loss_acc_spiral.png)
-* **Meander Continuous Stroke Learning**:
+- **Meander Continuous Stroke Learning**:
   ![Meander Learning Curve](assets/figures/loss_acc_meander.png)
-* **Circle Tremor Stability Learning**:
+- **Circle Tremor Stability Learning**:
   ![Circle Learning Curve](assets/figures/loss_acc_circle.png)
 
 ---
 
-## Setup & Installation
+## Getting Started & Local Development
 
-### Prerequisites
-* Python 3.10 – 3.12
-* [uv](https://docs.astral.sh/uv/) (recommended) or standard `pip`
+### 1. Prerequisites
+- Python 3.10 – 3.12
+- [uv](https://docs.astral.sh/uv/) (recommended) or standard `pip`
 
-### 1. Environment Synchronization
-Execute from within the `parkindraw-ai/ml/` directory:
+### 2. Environment Synchronization
+Execute from within the `ml/` directory:
 
 ```bash
 # Install core ML dependencies using uv
 uv sync
 
-# (Optional) Include exploratory notebook dependencies (JupyterLab, Seaborn)
+# Optional: Include exploratory notebook dependencies (JupyterLab, Seaborn)
 uv sync --extra eda
 ```
 
----
+### 3. Running the Pipelines
 
-## Running the Pipelines
-
-You can execute individual lifecycle stages or trigger the entire system end-to-end:
-
-### 1. Run the Full End-to-End Pipeline (Recommended)
+#### Full End-to-End Pipeline (Recommended)
 Sequentially runs Data Preparation, Multi-Drawing 3-Fold Cross-Validation, and Holdout Evaluation:
 ```bash
 uv run python -m pipelines.full_pipeline --epochs 50 --batch-size 32
 ```
 
-### 2. Run Data Preparation Only
+#### Data Preparation Only
 Scans raw data, resolves anomalies, computes duplicate clusters, and writes `data/splits/master_manifest.csv`:
 ```bash
 uv run python -m pipelines.preparation
 ```
 
-### 3. Run Multi-Drawing Training Only
+#### Multi-Drawing Training Only
 Trains ResNet-18 across modalities using 3-fold cross-validation:
 ```bash
 # Train all modalities across all 3 folds:
@@ -269,45 +274,38 @@ uv run python -m pipelines.train --drawing-type circle --fold all
 uv run python -m pipelines.train --drawing-type spiral --fold 0 --epochs 20
 ```
 
-### 4. Run Locked Holdout Evaluation Only
+#### Locked Holdout Evaluation Only
 Evaluates serialized production checkpoints in `artifacts/models/` against the holdout partition:
 ```bash
 uv run python -m pipelines.evaluate
 ```
 
----
-
-## MLflow Experiment Tracking
-
+### 4. Interactive Experiment Tracking with MLflow
 Every training epoch, loss metric, ROC-AUC score, hyperparameter configuration, and model checkpoint is recorded locally in a SQLite-backed database at `artifacts/tracking/mlflow.db`.
 
-### Launch the MLflow Dashboard
 To start the interactive web UI and inspect runs, learning curves, and artifacts:
-
 ```bash
-# Using python -m avoids Windows executable trampoline issues
 uv run python -m mlflow ui --backend-store-uri sqlite:///artifacts/tracking/mlflow.db
 ```
 
-Access the interactive dashboard in your browser:
-👉 **[http://127.0.0.1:5000](http://127.0.0.1:5000)**
+Access the dashboard at [http://127.0.0.1:5000](http://127.0.0.1:5000).
 
 ---
 
-## Quality Gates & Automated Testing
+## Quality Assurance & Testing
 
-A comprehensive test suite of **86 unit and integration tests** verifies data splitting invariants, model head operations, PyTorch training loops, and pipeline orchestration:
+A comprehensive test suite of 86 unit and integration tests verifies data splitting invariants, model head operations, PyTorch training loops, and pipeline orchestration:
 
 ```bash
-# 1. Run code linter
+# Run code linter
 uv run python -m ruff check src pipelines tests configs
 
-# 2. Run full automated test suite
+# Run full automated test suite
 uv run python -m pytest
 ```
 
 ---
 
-## License
+## License & Disclaimers
 
-The ParkinDraw ML codebase is licensed under the [MIT License](../LICENSE). The NewHandPD dataset and third-party research publications retain their respective academic and original licenses.
+The Parkindraw ML codebase is licensed under the [MIT License](../LICENSE). The NewHandPD dataset and third-party research publications retain their respective academic and original licenses.
