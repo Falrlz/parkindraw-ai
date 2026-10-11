@@ -2,6 +2,7 @@
 
 [![Python](https://img.shields.io/badge/Python-3.12%2B-blue.svg?logo=python&logoColor=white)](https://www.python.org/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.5%2B-EE4C2C.svg?logo=pytorch&logoColor=white)](https://pytorch.org/)
+[![MLflow](https://img.shields.io/badge/MLflow-2.x-0194E2.svg?logo=mlflow&logoColor=white)](https://mlflow.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115%2B-009688.svg?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![React](https://img.shields.io/badge/React-19-61DAFB.svg?logo=react&logoColor=black)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0%2B-3178C6.svg?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
@@ -20,8 +21,8 @@ Have you ever wondered if subtle changes in handwriting, minor hand tremors, or 
 
 ## Preview
 
-### Dashboard
-![Dashboard](.github/assets/parkindraw-home.gif)
+### Homepage
+![Homepage](.github/assets/parkindraw-home.gif)
 
 ### Interactive Screening
 ![Interactive Screening](.github/assets/parkindraw-screening.gif)
